@@ -1,0 +1,15 @@
+
+…python:S117†"aRename this local variable "val_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(çş’éúÿÿÿÿ8Ü¬©ş†/
+python:S117“"bRename this local variable "val_prov_parentID" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÈŸóú8Ü¬©ş†/
+„python:S117³"`Rename this local variable "ev_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(ï«Ø½ùÿÿÿÿ8Ü¬©ş†/
+…python:S117„"aRename this local variable "ev_prov_parentID" to match the regular expression ^[_a-z][a-z0-9_]*$.(—…ûøÿÿÿÿ8Ü¬©ş†/
+zpython:S3776¡"URefactor this function to reduce its Cognitive Complexity from 155 to the 15 allowed.(Ãøàºÿÿÿÿÿ8Ü¬©ş†/
+‡python:S117†"cRename this local variable "val_prov_mediaType" to match the regular expression ^[_a-z][a-z0-9_]*$.(çş’éúÿÿÿÿ8Ü¬©ş†/
+kpython:S1192·"FDefine a constant instead of duplicating this literal '@type' 6 times.(şØ…ıüÿÿÿÿ8Ü¬©ş†/
+‡python:S117±"cRename this local variable "ev_earliestEndTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(äİ÷Œüÿÿÿÿ8Ü¬©ş†/
+†python:S117³"bRename this local variable "ev_prov_mediaType" to match the regular expression ^[_a-z][a-z0-9_]*$.(ï«Ø½ùÿÿÿÿ8Ü¬©ş†/
+„python:S117°"eRename this local variable "ev_earliestStartTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¨µğœ8Ü¬©ş†/
+…python:S117±"aRename this local variable "ev_latestEndTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(äİ÷Œüÿÿÿÿ8Ü¬©ş†/
+rpython:S3776q"URefactor this function to reduce its Cognitive Complexity from 538 to the 15 allowed.(ØÜŒ‰ùÿÿÿÿ
+‚python:S117°"cRename this local variable "ev_latestStartTime" to match the regular expression ^[_a-z][a-z0-9_]*$.(¨µğœ8Ü¬©ş†/
+zpython:S3776ƒ"URefactor this function to reduce its Cognitive Complexity from 215 to the 15 allowed.(¹™²ºøÿÿÿÿ8Ü¬©ş†/

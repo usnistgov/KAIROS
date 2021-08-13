@@ -1,0 +1,22 @@
+
+jpython:S1192"MDefine a constant instead of duplicating this literal "./config.ini" 9 times.(°û…ôøÿÿÿÿ
+Bpython:S125f"Remove this commented out code.(‹§Ó¯úÿÿÿÿ8…¶Ñ×ı.
+Tpython:S1481‰"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ
+Zpython:S1481J"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8…¶Ñ×ı.
+Bpython:S125 "Remove this commented out code.(İÕÆşÿÿÿÿ8…¶Ñ×ı.
+;python:S125i"Remove this commented out code.(İÕÆşÿÿÿÿ
+?python:S1110İ"!Remove those useless parentheses.(ıå–şùÿÿÿÿ
+?python:S1110ê"!Remove those useless parentheses.(Ã®š•ùÿÿÿÿ
+;python:S125"Remove this commented out code.(‹§Ó¯úÿÿÿÿ
+Zpython:S1481k"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8…¶Ñ×ı.
+:python:S1110²"!Remove those useless parentheses.(šÑÌ
+Wpython:S1481«"9Remove the unused local variable "cmu_simple_ta1_key_df".(Â»ƒ¯ûÿÿÿÿ
+:python:S1110°"!Remove those useless parentheses.(óíğÂ
+?python:S1110ï"!Remove those useless parentheses.(Ã®š•ùÿÿÿÿ
+?python:S1110ß"!Remove those useless parentheses.(±å´ªüÿÿÿÿ
+?python:S1110â"!Remove those useless parentheses.(±å´ªüÿÿÿÿ
+Opython:S1481"*Remove the unused local variable "ibm_df".(š†÷øÿÿÿÿ8…¶Ñ×ı.
+Cpython:S125Ÿ"Remove this commented out code.(İÕÆşÿÿÿÿ8…¶Ñ×ı.
+Cpython:S125œ"Remove this commented out code.(‹§Ó¯úÿÿÿÿ8…¶Ñ×ı.
+?python:S1110æ"!Remove those useless parentheses.(Ã®š•ùÿÿÿÿ
+[python:S1481Ó"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8…¶Ñ×ı.

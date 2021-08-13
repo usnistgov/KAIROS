@@ -1,0 +1,22 @@
+
+Qpython:S1481Æ	"1Remove the unused local variable "gev_opt_count".(¼ÿş8³û¯Í†/
+ypython:S3776ı"TRefactor this function to reduce its Cognitive Complexity from 43 to the 15 allowed.(‡öïŸøÿÿÿÿ8³û¯Í†/
+ypython:S3776â"TRefactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.(³­‚ªúÿÿÿÿ8¥â†¤ˆ/
+python:S1192¥"iDefine a constant instead of duplicating this literal '../../../../Phase_1_evaluation/Examples/' 7 times.(Ô¶Ÿûÿÿÿÿ8¥â†¤ˆ/
+Opython:S1066‘"/Merge this if statement with the enclosing one.(öô§ô8¥â†¤ˆ/
+`python:S1481¸	";Remove the unused local variable "input_ta2_gev_opt_count".(ÁÀ‰úÿÿÿÿÿ8³û¯Í†/
+tpython:S3776¡"TRefactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.(á¾˜8¥â†¤ˆ/
+tpython:S3776Ô
+"TRefactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.(†ğ¶®8³û¯Í†/
+Kpython:S5806²"+Rename this variable; it shadows a builtin.(›°æ×8¥â†¤ˆ/
+ypython:S3776¥	"TRefactor this function to reduce its Cognitive Complexity from 82 to the 15 allowed.(Ûîµˆùÿÿÿÿ8³û¯Í†/
+{python:S1192‡"VDefine a constant instead of duplicating this literal 'Extraction completed!' 3 times.(ÊŠÓÿÿÿÿÿ8³û¯Í†/
+{python:S1192ö
+"VDefine a constant instead of duplicating this literal 'Directory not found: ' 3 times.(¸ã€¸øÿÿÿÿ8³û¯Í†/
+tpython:S3776ˆ"TRefactor this function to reduce its Cognitive Complexity from 51 to the 15 allowed.(ùÁÕä8¥â†¤ˆ/
+rpython:S3776Ğ"TRefactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.(‚ü#8¥â†¤ˆ/
+`python:S1481ª	";Remove the unused local variable "input_ta2_gev_opt_count".(¬ÅÈğúÿÿÿÿ8³û¯Í†/
+tpython:S3776Ö"TRefactor this function to reduce its Cognitive Complexity from 77 to the 15 allowed.(´îûê8¥â†¤ˆ/
+kpython:S1192µ
+"FDefine a constant instead of duplicating this literal '.xlsx' 4 times.(æÙŠŒıÿÿÿÿ8³û¯Í†/
+ypython:S3776í"TRefactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.(Á„ öûÿÿÿÿ8¥â†¤ˆ/

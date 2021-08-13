@@ -1,0 +1,14 @@
+
+Ppython:S1481+"8Remove the unused local variable "annotation_directory".(ÈîÇ
+Spython:S1481-"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ
+Rpython:S1481"5Remove the unused local variable "graph_g_directory".(âŒ’ şÿÿÿÿ
+Wpython:S1481("8Remove the unused local variable "ta2_output_directory".(“öæâ8•œş.
+]python:S1481"9Remove the unused local variable "task2_score_directory".(˜¾˜Âûÿÿÿÿ8•œş.
+‰python:S4144$"eUpdate this function so that its implementation is not identical to test_task1_end_to_end on line 23.(óøú¡ùÿÿÿÿ8•Ÿ˜€/
+Opython:S1481)"8Remove the unused local variable "ta1_output_directory".(‚×«t
+Vpython:S1481"8Remove the unused local variable "ta1_output_directory".(‚×«t8•œş.
+Ppython:S1481"8Remove the unused local variable "ta2_output_directory".(“öæâ
+Vpython:S1481*"9Remove the unused local variable "task2_score_directory".(˜¾˜Âûÿÿÿÿ
+Zpython:S1481 "6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8•œş.
+Ypython:S1481,"5Remove the unused local variable "graph_g_directory".(âŒ’ şÿÿÿÿ8•œş.
+Wpython:S1481"8Remove the unused local variable "annotation_directory".(ÈîÇ8•œş.
