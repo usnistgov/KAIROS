@@ -1,7 +1,7 @@
 # KAIROS Scorer for Phase 1 Evaluation
 
 Date: 02/02/2021
-<br>Version: v0.5.2
+<br>Version: v1.0.0
 
 ## Note to Readers:
 
