@@ -1,41 +1,0 @@
-
-tpython:S3776¤"TRefactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.(ğ’æÈ8Ş¢Æ¾†/
-xpython:S1192â"SDefine a constant instead of duplicating this literal 'true_{0}_count@{1}' 5 times.(æ¯ìâûÿÿÿÿ8Ş¢Æ¾†/
-‚python:S1192ä"]Define a constant instead of duplicating this literal 'extra_relevant_{0}_count@{1}' 5 times.(ª¨Úûÿÿÿÿ8Ş¢Æ¾†/
-}python:S1192İ"XDefine a constant instead of duplicating this literal 'assessed_{0}_woer_count' 5 times.(ô•çÙüÿÿÿÿ8Ş¢Æ¾†/
-Opython:S1066²"/Merge this if statement with the enclosing one.(àÈà8Ş¢Æ¾†/
-ypython:S1192á"YDefine a constant instead of duplicating this literal 'extra_relevant_{0}_count' 5 times.(ŠĞîø8Ş¢Æ¾†/
-spython:S3776L"TRefactor this function to reduce its Cognitive Complexity from 52 to the 15 allowed.(‰¾ê»8Ş¢Æ¾†/
-€python:S1192í"[Define a constant instead of duplicating this literal 'extra-irrelevant_{0}_count' 4 times.(èãâŸûÿÿÿÿ8Ş¢Æ¾†/
-ypython:S3776ü"TRefactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.(ƒÚ¥Òøÿÿÿÿ8Ş¢Æ¾†/
-tpython:S3776‹"TRefactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.(À´”8Ş¢Æ¾†/
-rpython:S1192ª"RDefine a constant instead of duplicating this literal '/Assessed_events/' 3 times.(ï£“£8Ş¢Æ¾†/
->python:S125¤"Remove this commented out code.(”ÅÆ°8Ş¢Æ¾†/
-vpython:S1192ä"QDefine a constant instead of duplicating this literal 'File not found: ' 6 times.(Ç©¾Öøÿÿÿÿ8Ş¢Æ¾†/
-xpython:S1192Ü"SDefine a constant instead of duplicating this literal 'assessed_{0}_count' 5 times.(×Ù»Õùÿÿÿÿ8Ş¢Æ¾†/
-kpython:S1192–"KDefine a constant instead of duplicating this literal 'KE error!' 14 times.(’°ñƒ8Ş¢Æ¾†/
-†python:S1192æ"aDefine a constant instead of duplicating this literal 'distinct_true_{0}_woer_count@{1}' 5 times.(°á£íıÿÿÿÿ8Ş¢Æ¾†/
-python:S1192ë"\Define a constant instead of duplicating this literal 'extra_relevant_{0}_no_count' 4 times.(ùÃşÔøÿÿÿÿ8Ş¢Æ¾†/
-opython:S1192è"PDefine a constant instead of duplicating this literal 'match_{0}_count' 4 times.(ìÊ…x8Ş¢Æ¾†/
-zpython:S1192³"UDefine a constant instead of duplicating this literal '/Assessed_relations/' 3 times.(¯ƒğãùÿÿÿÿ8Ş¢Æ¾†/
-|python:S1192ã"\Define a constant instead of duplicating this literal 'distinct_true_{0}_count@{1}' 5 times.(Å×Ğá8Ş¢Æ¾†/
-xpython:S1192å"XDefine a constant instead of duplicating this literal 'true_{0}_woer_count@{1}' 5 times.(Š¯¶ˆ8Ş¢Æ¾†/
-spython:S1192ç"NDefine a constant instead of duplicating this literal 'ann_{0}_count' 5 times.(é±È¹ùÿÿÿÿ8Ş¢Æ¾†/
-Qpython:S1481x"-Remove the unused local variable "schema_id".(ÇÍ±ÿùÿÿÿÿ8Ş¢Æ¾†/
-ƒpython:S1871«"cEither merge this branch with the identical one on line "297" or change one of the implementations.(íªå¡8Ş¢Æ¾†/
-tpython:S1192ß"ODefine a constant instead of duplicating this literal 'true_{0}_count' 5 times.(ıªà¯úÿÿÿÿ8Ş¢Æ¾†/
-}python:S1192é"XDefine a constant instead of duplicating this literal 'match-inexact_{0}_count' 4 times.(‰ßÕ¦ûÿÿÿÿ8Ş¢Æ¾†/
-Tpython:S1066¾"/Merge this if statement with the enclosing one.(¿Éíåûÿÿÿÿ8Ş¢Æ¾†/
-„python:S1192ì"_Define a constant instead of duplicating this literal 'extra_relevant_{0}_empty_count' 4 times.(’ãÍ€øÿÿÿÿ8Ş¢Æ¾†/
-Opython:S1066º"/Merge this if statement with the enclosing one.(ƒ¯ò8Ş¢Æ¾†/
-ƒpython:S1871ó"cEither merge this branch with the identical one on line "241" or change one of the implementations.(íªå¡8Ş¢Æ¾†/
-xpython:S1192à"XDefine a constant instead of duplicating this literal 'distinct_true_{0}_count' 5 times.(„³ö·8Ş¢Æ¾†/
-Tpython:S1066¶"/Merge this if statement with the enclosing one.(ÌÕ¶ûÿÿÿÿ8Ş¢Æ¾†/
-spython:S1192Ü"NDefine a constant instead of duplicating this literal 'all_{0}_count' 4 times.(×Ù»Õùÿÿÿÿ8Ş¢Æ¾†/
-tpython:S1192î"TDefine a constant instead of duplicating this literal 'non-match_{0}_count' 4 times.(î–‚Œ8Ş¢Æ¾†/
-vpython:S1192°"VDefine a constant instead of duplicating this literal 'Directory not found: ' 4 times.(ê³ó8Ş¢Æ¾†/
-Cpython:S125ù"Remove this commented out code.(¡“ÿşÿÿÿÿ8´ê—À†/
-}python:S1192ê"]Define a constant instead of duplicating this literal 'extra_relevant_{0}_yes_count' 4 times.(èáõ¹8Ş¢Æ¾†/
-|python:S1192„"\Define a constant instead of duplicating this literal 'Input directory not found: ' 3 times.(°Ëø8Ş¢Æ¾†/
-~python:S1192Ş"YDefine a constant instead of duplicating this literal 'human_assessed_{0}_count' 4 times.(›ÇâŞúÿÿÿÿ8Ş¢Æ¾†/
-upython:S1192î"UDefine a constant instead of duplicating this literal 'unassessed_{0}_count' 4 times.(î–‚Œ8Ş¢Æ¾†/

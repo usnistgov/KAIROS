@@ -1,53 +1,0 @@
-
-Wpython:S1481_"8Remove the unused local variable "annotation_directory".(ÈîÇ8ÙÒÇŠÿ.
-Fpython:S1481L"'Remove the unused local variable "row".(¾·‹ç8ÙÒÇŠÿ.
-=python:S125R"Remove this commented out code.(ŒÉÀ8ÙÒÇŠÿ.
-=python:S125y"Remove this commented out code.(ŒÉÀ8ÙÒÇŠÿ.
-Xpython:S1481Ö"8Remove the unused local variable "ta2_output_directory".(“öæâ8´ÏÏ¥†/
-=python:S125N"Remove this commented out code.(ŒÉÀ8ÙÒÇŠÿ.
-Hpython:S1481 ")Remove the unused local variable "task2".(‡Ùé	8ÙÒÇŠÿ.
-—python:S1192L"xDefine a constant instead of duplicating this literal "cmu:schema_item_0/Steps/formulate-a-plot_1/Instantiated" 3 times.(¾·‹ç8ÙÒÇŠÿ.
-Wpython:S14814"8Remove the unused local variable "annotation_directory".(ÈîÇ8ÙÒÇŠÿ.
-Lpython:S1481©",Remove the unused local variable "true_row".(ıà”¼8ÙÒÇŠÿ.
-Rpython:S1481µ"-Remove the unused local variable "false_row".(ôÜ³©ıÿÿÿÿ8ÙÒÇŠÿ.
-Cpython:S125«"Remove this commented out code.(Ö‚šùÿÿÿÿ8ÙÒÇŠÿ.
-[python:S1481”"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8ÙÒÇŠÿ.
-Qpython:S1481±",Remove the unused local variable "true_row".(¥œœùşÿÿÿÿ8ÙÒÇŠÿ.
-Wpython:S1481¤"8Remove the unused local variable "ta1_output_directory".(‚×«t8ÙÒÇŠÿ.
-Xpython:S1481£"8Remove the unused local variable "ta2_output_directory".(“öæâ8ÙÒÇŠÿ.
-Fpython:S1481P"'Remove the unused local variable "row".(¾·‹ç8ÙÒÇŠÿ.
-Fpython:S1481w"'Remove the unused local variable "row".(ş‘Ûı8ÙÒÇŠÿ.
-Gpython:S1481o")Remove the unused local variable "task2".(‡Ùé	8ÙÒÇŠÿ.
-vpython:S1192A"RDefine a constant instead of duplicating this literal '_GraphG_order.csv' 3 times.(±´ƒãıÿÿÿÿ8ÙÒÇŠÿ.
-Zpython:S1481a"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8ÙÒÇŠÿ.
-Vpython:S1481]"8Remove the unused local variable "ta1_output_directory".(‚×«t8ÙÒÇŠÿ.
-Xpython:S1481"8Remove the unused local variable "ta2_output_directory".(“öæâ8´ÏÏ¥†/
-=python:S125}"Remove this commented out code.(ŒÉÀ8ÙÒÇŠÿ.
-<python:S125V"Remove this commented out code.(©´Ö8ÙÒÇŠÿ.
-Fpython:S1481"'Remove the unused local variable "row".(Ş–Ó¦8ÙÒÇŠÿ.
-Wpython:S1481å"8Remove the unused local variable "ta1_output_directory".(‚×«t8½°“³€/
-qpython:S1192/"MDefine a constant instead of duplicating this literal "./config.ini" 8 times.(°û…ôøÿÿÿÿ8ÙÒÇŠÿ.
-mpython:S1192<"IDefine a constant instead of duplicating this literal '/Orders/' 3 times.(»©›ßùÿÿÿÿ8ÙÒÇŠÿ.
->python:S125¹"Remove this commented out code.(ì¨¡½8ÙÒÇŠÿ.
-[python:S1481Ê"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8ÙÒÇŠÿ.
-=python:S125"Remove this commented out code.(©´Ö8ÙÒÇŠÿ.
-Vpython:S14812"8Remove the unused local variable "ta1_output_directory".(‚×«t8½°“³€/
-Üpython:S1192ª"¶Define a constant instead of duplicating this literal "ibm:TA2/ibm_TA1/Schemas/Executed_VIED/Steps/step06LoadBombInVehicle.ArtifactExistence.ManufactureAssemble.Unspecified" 4 times.(–Ú¸Ûüÿÿÿÿ8ÙÒÇŠÿ.
-Cpython:S125¯"Remove this commented out code.(ÖÀ¿ºüÿÿÿÿ8ÙÒÇŠÿ.
-Mpython:S1481­"-Remove the unused local variable "false_row".(ô¬Õã8ÙÒÇŠÿ.
-Xpython:S1481Š"8Remove the unused local variable "ta2_output_directory".(“öæâ8½°“³€/
-Fpython:S1481{"'Remove the unused local variable "row".(ş‘Ûı8ÙÒÇŠÿ.
-Xpython:S1481ä"8Remove the unused local variable "ta2_output_directory".(“öæâ8½°“³€/
-Wpython:S1481Æ"8Remove the unused local variable "ta1_output_directory".(‚×«t8´ÏÏ¥†/
-python:S101º"qRename class "TestScoreTask2_str2bool" to match the regular expression ^_?([A-Z_][a-zA-Z0-9]*|[a-z_][a-z0-9_]*)$.(‚ëÀ˜8ÙÒÇŠÿ.
-Gpython:S1481D")Remove the unused local variable "task2".(‡Ùé	8ÙÒÇŠÿ.
-Wpython:S1481×"8Remove the unused local variable "ta1_output_directory".(‚×«t8ÙÒÇŠÿ.
->python:S125ƒ"Remove this commented out code.(ì¨¡½8ÙÒÇŠÿ.
-spython:S1192w"TDefine a constant instead of duplicating this literal "ibm:TA2/VP1011.1002" 3 times.(ş‘Ûı8ÙÒÇŠÿ.
-Wpython:S1481"8Remove the unused local variable "ta1_output_directory".(‚×«t8ÙÒÇŠÿ.
-Cpython:S125·"Remove this commented out code.(ÖÀ¿ºüÿÿÿÿ8ÙÒÇŠÿ.
-Cpython:S125³"Remove this commented out code.(Ö‚šùÿÿÿÿ8ÙÒÇŠÿ.
-Wpython:S1481‹"8Remove the unused local variable "ta1_output_directory".(‚×«t8´ÏÏ¥†/
-Xpython:S1481’"8Remove the unused local variable "annotation_directory".(ÈîÇ8ÙÒÇŠÿ.
-Fpython:S1481T"'Remove the unused local variable "row".(ÒÖó™8ÙÒÇŠÿ.
-Zpython:S14816"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8ÙÒÇŠÿ.

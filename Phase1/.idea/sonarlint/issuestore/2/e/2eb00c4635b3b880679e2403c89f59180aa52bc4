@@ -1,19 +1,0 @@
-
-Špython:S117Ô"kRename this local variable "rel_subject_prov_mediaType" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÿÊ¥8®ûş†/
-mpython:S3776X"URefactor this function to reduce its Cognitive Complexity from 340 to the 15 allowed.(ßíƒ“
-Opython:S1481"*Remove the unused local variable "task_2".(½Ìâùÿÿÿÿÿ8ÙÕÿş†/
-€python:S117˜"aRename this local variable "rel_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(—ÍÏÑ8âÅØæ†/
-†python:S117†"bRename this local variable "rel_prov_parentID" to match the regular expression ^[_a-z][a-z0-9_]*$.(ßÿÆüşÿÿÿÿ8•¸ş†/
-Opython:S1481Œ"*Remove the unused local variable "task_2".(àëùÅùÿÿÿÿ8ÙÕÿş†/
-gpython:S1192"IDefine a constant instead of duplicating this literal '_rel.csv' 4 times.(Õº´Şüÿÿÿÿ
-Œpython:S117Õ"hRename this local variable "rel_object_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñ¡Ş¥ûÿÿÿÿ8“îış†/
-ppython:S1192m"QDefine a constant instead of duplicating this literal 'File not found: ' 4 times.(Õ¿ÔÈ8®×ş†/
-upython:S3776¿"URefactor this function to reduce its Cognitive Complexity from 135 to the 15 allowed.(é«³®8ÙÕÿş†/
-python:S117ë"bRename this local variable "ent_prov_parentID" to match the regular expression ^[_a-z][a-z0-9_]*$.(Ê°ìæ8”Î—ÿ†/
-spython:S3776“"URefactor this function to reduce its Cognitive Complexity from 369 to the 15 allowed.(‹íòğøÿÿÿÿ
-ˆpython:S117Ô"iRename this local variable "rel_subject_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÿÊ¥8¯Ìúş†/
-python:S117Õ"jRename this local variable "rel_object_prov_mediaType" to match the regular expression ^[_a-z][a-z0-9_]*$.(ñ¡Ş¥ûÿÿÿÿ8Ó”şş†/
-Cpython:S125"Remove this commented out code.(£°†°ùÿÿÿÿ8ÙÕÿş†/
-‚python:S117˜"cRename this local variable "rel_prov_mediaType" to match the regular expression ^[_a-z][a-z0-9_]*$.(—ÍÏÑ8ÃıØæ†/
-…python:S117ä"aRename this local variable "ent_prov_childID" to match the regular expression ^[_a-z][a-z0-9_]*$.(‡ÌµÜüÿÿÿÿ8Å®”ÿ†/
-tpython:S3776ø"URefactor this function to reduce its Cognitive Complexity from 138 to the 15 allowed.(Äòôo8ÙÕÿş†/

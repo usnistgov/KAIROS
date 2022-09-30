@@ -1,61 +1,0 @@
-
-[python:S1481Ï"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8Åâ˜•/
-Wpython:S1481Y"8Remove the unused local variable "annotation_directory".(ÈîÇ8¾ÏŸ†€/
-ypython:S1854Ç"YRemove this assignment to local variable 'annotation_directory'; the value is never used.(ÈîÇ8Åâ˜•/
-]python:S1481œ"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-Wpython:S1481U"8Remove the unused local variable "annotation_directory".(ÈîÇ8¾ÏŸ†€/
-\python:S14819">Remove the unused local variable "ta2_task1_output_directory".(äü08•è‡ğÿ.
-Vpython:S1481~"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8¥Ã’•/
-python:S101í"qRename class "TestScoreTask1_str2bool" to match the regular expression ^_?([A-Z_][a-zA-Z0-9]*|[a-z_][a-z0-9_]*)$.(­†Úø8•è‡ğÿ.
-\python:S1481?"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8•è‡ğÿ.
-Wpython:S14818"8Remove the unused local variable "annotation_directory".(ÈîÇ8•è‡ğÿ.
-\python:S1481|"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8¥Ã’•/
-Cpython:S125Ï"Remove this commented out code.(Ä©ºÜúÿÿÿÿ8Åâ˜•/
-xpython:S1854y"YRemove this assignment to local variable 'annotation_directory'; the value is never used.(ÈîÇ8¥Ã’•/
-Wpython:S1481<"8Remove the unused local variable "annotation_directory".(ÈîÇ8•è‡ğÿ.
-Vpython:S1481Z"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8¾ÏŸ†€/
-]python:S1481º"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-Wpython:S1481â"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8Åâ˜•/
-Wpython:S1481Æ"8Remove the unused local variable "ta1_output_directory".(‚×«t8Åâ˜•/
-Vpython:S14817"8Remove the unused local variable "ta1_output_directory".(‚×«t8•è‡ğÿ.
-\python:S1481\"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8¾ÏŸ†€/
-Zpython:S1481]"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8¾ÏŸ†€/
-]python:S1481€"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8¥Ã’•/
-Xpython:S1481·"8Remove the unused local variable "annotation_directory".(ÈîÇ8Åâ˜•/
-¾python:S1192ª"Define a constant instead of duplicating this literal "ibm:TA2/ibm:TA2/Task1/Ok4loi9Mrp/EventGraph/Relations/K0C047UIA.rsd.txt.K0C047UIA.rsd.txt-R8" 3 times.(™¢ÿà8Åâ˜•/
-Vpython:S1481x"8Remove the unused local variable "ta1_output_directory".(‚×«t8¥Ã’•/
-Wpython:S1481¶"8Remove the unused local variable "ta1_output_directory".(‚×«t8Åâ˜•/
-Xpython:S1481"8Remove the unused local variable "annotation_directory".(ÈîÇ8Åâ˜•/
-]python:S1481¸">Remove the unused local variable "ta2_task1_output_directory".(äü08Åâ˜•/
-]python:S1481Ş">Remove the unused local variable "ta2_task1_output_directory".(äü08Åâ˜•/
-Ÿpython:S1192m"{Define a constant instead of duplicating this literal "caci:Schemas/Instantiated/cluster_0/Steps/EN_Event_0000052" 3 times.(£”–¯ÿÿÿÿÿ8¥Ã’•/
-]python:S1481 "8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-]python:S1481Î"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-Wpython:S1481"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8Åâ˜•/
-\python:S1481;"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8•è‡ğÿ.
-]python:S1481¾"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-]python:S1481ä"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-[python:S1481å"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8Åâ˜•/
-Wpython:S1481˜"8Remove the unused local variable "ta1_output_directory".(‚×«t8Åâ˜•/
-Wpython:S1481Ü"8Remove the unused local variable "ta1_output_directory".(‚×«t8Åâ˜•/
-Vpython:S1481T"8Remove the unused local variable "ta1_output_directory".(‚×«t8¾ÏŸ†€/
-\python:S1481X"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8¾ÏŸ†€/
-\python:S1481z">Remove the unused local variable "ta2_task1_output_directory".(äü08¥Ã’•/
-[python:S1481¡"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8Åâ˜•/
-[python:S1481"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8¥Ã’•/
-\python:S1481V">Remove the unused local variable "ta2_task1_output_directory".(äü08¾ÏŸ†€/
->python:S125Õ"Remove this commented out code.(È·µá8Åâ˜•/
-Vpython:S1481="2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8•è‡ğÿ.
-ypython:S1854İ"YRemove this assignment to local variable 'annotation_directory'; the value is never used.(ÈîÇ8Åâ˜•/
-]python:S1481š">Remove the unused local variable "ta2_task1_output_directory".(äü08Åâ˜•/
-Wpython:S1481Ì"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8Åâ˜•/
-[python:S1481¿"6Remove the unused local variable "test_key_directory".(š½ßûúÿÿÿÿ8Åâ˜•/
-Äpython:S1192°"Define a constant instead of duplicating this literal "ibm:TA2/ibm:TA2/Task1/Ok4loi9Mrp/EventGraph/Relations/K0C047UIH.rsd.txt.K0C047UIH.rsd.txt-R11" 3 times.(ûêóÄùÿÿÿÿ8Åâ˜•/
-qpython:S11925"MDefine a constant instead of duplicating this literal "./config.ini" 7 times.(°û…ôøÿÿÿÿ8•è‡ğÿ.
-Xpython:S1481™"8Remove the unused local variable "annotation_directory".(ÈîÇ8Åâ˜•/
-Wpython:S1481¼"2Remove the unused local variable "caci_directory".(ÌªçŠúÿÿÿÿ8Åâ˜•/
-]python:S1481à"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-¿python:S1192·"Define a constant instead of duplicating this literal "ibm:TA2/ibm:TA2/Task1/Ok4loi9Mrp/EventGraph/Relations/K0C047UID.rsd.txt.K0C047UID.rsd.txt-R20" 3 times.(ñ°¡¥8Åâ˜•/
-]python:S1481Ê"8Remove the unused local variable "assessment_directory".(…½êşıÿÿÿÿ8Åâ˜•/
-Xpython:S1481»"8Remove the unused local variable "annotation_directory".(ÈîÇ8Åâ˜•/
-]python:S1481È">Remove the unused local variable "ta2_task1_output_directory".(äü08Åâ˜•/

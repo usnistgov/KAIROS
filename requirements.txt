@@ -1,0 +1,14 @@
+xlrd==1.2.0
+openpyxl==3.0.5
+tqdm==4.55.1
+pandas
+numpy
+pyyaml
+scipy
+pytest
+flake8
+coverage
+autopep8
+sphinx
+sphinx-rtd-theme
+networkx
