@@ -10,6 +10,17 @@ KAIROS TA1 and TA2 Systems.
 * Seungmin Seo
 * Oleg Aulov
 
+## Upcoming Updates
+
+Graph G Converter for SDF2.2 will be updated soon.
+Grpah G Converter for SDF2.3 will be updated in coming weeks.
+
+Graph G Converter can be run by the following command in the `execution_scripts` directory. 
+
+```bash
+python script_01_generate_graph_g.py -f config.ini -m "Default"
+```
+
 ## Installing and Uninstalling the software
 
 This package was tested in python 3.7.6.
