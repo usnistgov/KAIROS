@@ -12,8 +12,7 @@ KAIROS TA1 and TA2 Systems.
 
 ## Upcoming Updates
 
-Graph G Converter for SDF2.2 will be updated soon.
-Grpah G Converter for SDF2.3 will be updated in coming weeks.
+Grpah G Converter for SDF2.3 will be updated in a couple of days.
 
 Graph G Converter can be run by the following command in the `execution_scripts` directory. 
 
