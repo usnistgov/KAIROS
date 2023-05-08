@@ -26,6 +26,14 @@ Graph G Converter can be run by the following command in the `execution_scripts`
 python script_01_generate_graph_g.py -f config.ini -m "Default"
 ```
 
+## Tags
+
+You can access the different version of softwares in the tags tab.
+
+Currently available:
+* phase_2a: Software for Phase 2a full evaluation
+* phase2b_beta: Software for Phase 2b DryRun
+
 ## Installing and Uninstalling the software
 
 This package was tested in python 3.7.6.
