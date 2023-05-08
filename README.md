@@ -32,7 +32,7 @@ You can access the previous version of softwares in the tags tab.
 
 Currently available:
 * phase_2a: Software for Phase 2a full evaluation
-* phase2b_beta: Software for Phase 2b DryRun
+* phase_2b_beta: Software for Phase 2b DryRun
 
 ## Installing and Uninstalling the software
 
