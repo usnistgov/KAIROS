@@ -10,9 +10,15 @@ KAIROS TA1 and TA2 Systems.
 * Seungmin Seo
 * Oleg Aulov
 
-## Upcoming Updates
+## New in this version
 
-Grpah G Converter for SDF2.3 will be updated in a couple of days.
+The software has been updated for SDF 2.3 (beta).
+
+This is the preliminary scorer and graph G converter. 
+
+The software will be updated after we receive the finalized assessment format.
+
+The evaluation of scores for TA1 are not supported in this version.
 
 Graph G Converter can be run by the following command in the `execution_scripts` directory. 
 
