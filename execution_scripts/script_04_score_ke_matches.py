@@ -64,11 +64,6 @@ def score_ke_matches(config_filepath: str, config_mode: str, score_tasks: str) -
     # the cache file for qnode similarity scores
     qnode_sim_fp = os.path.join(qnode_dir, 'nist_isi_qnode_sim_cache.tsv')
 
-    # if TA1 or TA2 extraction directories do not exist, throw error message
-    if not os.path.isdir(ta2_task1_score_dir) \
-            or not os.path.isdir(ta2_task2_score_dir):
-        sys.exit('Directory not found: ' + ta2_task1_score_dir +
-                 ' or ' + ta2_task2_score_dir)
     # if TA2 Task1 analysis directories do not exist, create them
     # For later: ta1_as_path = os.path.join(ta1_analysis_dir, "Automated_Scoring")
     ta2_t1_as_path = os.path.join(ta2_task1_analysis_dir, "Automated_Scoring")
@@ -89,17 +84,22 @@ def score_ke_matches(config_filepath: str, config_mode: str, score_tasks: str) -
     print("Importing TA2 Task 1 Submissions")
     ta2_task1_collection = TA2Collection(is_task2=False)
     if score_tasks == "all" or score_tasks == "ta2task1":
+        if not os.path.isdir(ta2_task1_score_dir):
+            sys.exit('Directory not found: ' + ta2_task1_score_dir)
         ta2_task1_collection.import_extractions_from_file_collection(ta2_task1_score_dir)
 
     print("Importing TA2 Task 2 Submissions")
     ta2_task2_collection = TA2Collection(is_task2=True)
     if score_tasks == "all" or score_tasks == "ta2task2":
+        if not os.path.isdir(ta2_task2_score_dir):
+            sys.exit('Directory not found: ' + ta2_task2_score_dir)
         ta2_task2_collection.import_extractions_from_file_collection(ta2_task2_score_dir)
 
     # Graph G must be imported for multiple tasks
     print("Importing Graph G")
     graph_g_collection = TA2Collection(is_task2=True)
-    if score_tasks == "all" or score_tasks == "graphg" or score_tasks == "task2":
+    if score_tasks == "all" or score_tasks == "graphg" or \
+            score_tasks == "ta2task1" or score_tasks == "ta2task2":
         graph_g_collection.import_extractions_from_file_collection(graph_g_extraction_dir,
                                                                    extract_for_graph_g=True)
 

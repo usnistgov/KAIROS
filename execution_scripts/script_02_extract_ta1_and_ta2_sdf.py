@@ -45,7 +45,6 @@ def extract_sdf(config_filepath: str, config_mode: str, score_tasks: str):
                                config[config_mode]["graph_g_subdir"])
     graph_g_extraction_dir = os.path.join(output_dir_prefix,
                                           config[config_mode]["graph_g_extraction_subdir"])
-
     # TA1
     ta1_collection = TA1Collection()
     if score_tasks == "ta1" or score_tasks == "all":
@@ -93,7 +92,7 @@ def extract_sdf(config_filepath: str, config_mode: str, score_tasks: str):
 
     # TA2 Task 1
     ta2_task1_collection = TA2Collection(is_task2=False)
-    if score_tasks == "all" or score_tasks == "ta2task1":
+    if score_tasks == "ta2task1" or score_tasks == "all":
         print("Extracting TA2 Task 1 Instantiations from SDF")
         ta2_output_directory = ta2_task1_submission_dir
         ta2_score_directory = ta2_task1_score_dir

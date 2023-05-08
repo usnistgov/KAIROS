@@ -42,12 +42,6 @@ def compute_submission_stats(config_filepath: str, config_mode: str, score_tasks
     graph_g_analysis_dir = os.path.join(output_dir_prefix,
                                         config[config_mode]["graph_g_analysis_subdir"])
 
-    # if TA1 or TA2 extraction directories do not exist, throw error message
-    if not os.path.isdir(ta1_score_dir) or not os.path.isdir(ta2_task1_score_dir) \
-            or not os.path.isdir(ta2_task2_score_dir):
-        sys.exit('Directory not found: ' + ta1_score_dir + ' or ' + ta2_task1_score_dir +
-                 ' or ' + ta2_task2_score_dir)
-
     # if TA1 analysis directories do not exist, create them
     if not os.path.isdir(ta1_analysis_dir):
         os.makedirs(ta1_analysis_dir)
@@ -55,6 +49,8 @@ def compute_submission_stats(config_filepath: str, config_mode: str, score_tasks
         pass
 
     if score_tasks == "all" or score_tasks == "ta1":
+        if not os.path.isdir(ta1_score_dir):
+            sys.exit('Directory not found: ' + ta1_score_dir)
         # compute ta1 submission stats
         print("Computing TA1 Stats")
         ta1_stats_df, ta1_qnode_df, ta1_ent_ev_df = \
@@ -68,6 +64,8 @@ def compute_submission_stats(config_filepath: str, config_mode: str, score_tasks
 
     # compute ta2 submission stats
     if score_tasks == "all" or score_tasks == "ta2task1":
+        if not os.path.isdir(ta2_task1_score_dir):
+            sys.exit('Directory not found: ' + ta2_task1_score_dir)
         print("Computing TA2 Task 1 Stats")
         ta2_stats_df, ta2_group_stats_df, ta2_qnode_df, ta2_ent_ev_df, ta2_ins_ent_ev_df = \
             compute_ta2_submission_stats(ta2_task1_score_dir, ta2_task1_analysis_dir)
@@ -80,6 +78,8 @@ def compute_submission_stats(config_filepath: str, config_mode: str, score_tasks
 
     # compute ta2 submission stats
     if score_tasks == "all" or score_tasks == "ta2task2":
+        if not os.path.isdir(ta2_task2_score_dir):
+            sys.exit('Directory not found: ' + ta2_task2_score_dir)
         print("Computing TA2 Task 2 Stats")
         ta2_stats_df, ta2_group_stats_df, ta2_qnode_df, ta2_ent_ev_df, ta2_ins_ent_ev_df = \
             compute_ta2_submission_stats(ta2_task2_score_dir, ta2_task2_analysis_dir)

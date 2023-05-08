@@ -12,7 +12,30 @@ import json
 import urllib.request
 
 
-def get_qnode_label(qnode_name: str, qnode_df_fp: str) -> str:
+def get_wd_description(qnode_name: str, qnode_df_fp: str) -> str:
+    qnode_df = pd.read_csv(qnode_df_fp)
+    if 'description' not in qnode_df.columns:
+        qnode_df['description'] = 'no description'
+
+    description_list = qnode_df.loc[qnode_df['qnode'] == qnode_name, 'description'].tolist()
+    if description_list[0] != 'no description':
+        wd_description = str(description_list[0])
+    else:
+        api_url = "https://kgtk.isi.edu/api?q={}&language=en&extra_info=true".format(qnode_name)
+        with urllib.request.urlopen(api_url) as url:
+            qnode_data = json.loads(url.read().decode())
+        if len(qnode_data[0]['description']) > 0:
+            wd_description = qnode_data[0]['description'][0]
+        else:
+            wd_description = ''
+
+        qnode_df.loc[qnode_df['qnode'] == qnode_name, 'description'] = wd_description
+        qnode_df.to_csv(qnode_df_fp, index=False, header=True)
+
+    return wd_description
+
+
+def get_wdnode_label(qnode_name: str, qnode_df_fp: str) -> str:
     """
     Finds qlabel if in table. If not, queries api and writes it to table for a cache
 
@@ -24,26 +47,26 @@ def get_qnode_label(qnode_name: str, qnode_df_fp: str) -> str:
 
     """
     qnode_df = pd.read_csv(qnode_df_fp)
-    qlabel = ""
+    wd_label = ""
     write_wikidata = False
-    qlabel_list = qnode_df.loc[qnode_df['qnode'] == qnode_name, 'qlabel'].tolist()
-    if len(qlabel_list) >= 1:
-        qlabel = str(qlabel_list[0])
+    wd_label_list = qnode_df.loc[qnode_df['qnode'] == qnode_name, 'qlabel'].tolist()
+    if len(wd_label_list) >= 1:
+        wd_label = str(wd_label_list[0])
     else:
         # Find in api
         api_url = "https://kgtk.isi.edu/api?q={}&language=en&extra_info=true".format(qnode_name)
         with urllib.request.urlopen(api_url) as url:
             qnode_data = json.loads(url.read().decode())
-        qlabel = qnode_data[0]['label'][0]
-        if qlabel != '':
+        wd_label = qnode_data[0]['label'][0]
+        if wd_label != '':
             qnode_df = pd.concat([qnode_df,
-                                  pd.DataFrame([{'qnode': qnode_name, 'qlabel': qlabel}])],
+                                  pd.DataFrame([{'qnode': qnode_name, 'qlabel': wd_label}])],
                                  ignore_index=True)
             write_wikidata = True
 
     if write_wikidata:
         qnode_df.to_csv(qnode_df_fp, index=False, header=True)
-    return qlabel
+    return wd_label
 
 
 def add_temporal_info(ep_dict: dict, start_datetime_type: str, start_datetime: str,
@@ -61,9 +84,9 @@ def add_temporal_info(ep_dict: dict, start_datetime_type: str, start_datetime: s
         ep_dict['temporal']['latestStartTime'] = start_late_datetime
     elif start_datetime_type == 'startbefore':
         ep_dict['temporal']['latestStartTime'] = start_late_datetime
-
     elif start_datetime_type == 'startafter':
         ep_dict['temporal']['earliestStartTime'] = start_early_datetime
+
     # add end datetime
     if end_datetime_type == 'endon':
         ep_dict['temporal']['earliestEndTime'] = end_early_datetime
@@ -73,11 +96,10 @@ def add_temporal_info(ep_dict: dict, start_datetime_type: str, start_datetime: s
     elif end_datetime_type == 'endafter':
         ep_dict['temporal']['earliestEndTime'] = end_early_datetime
 
+    if start_datetime_type == 'startunk' and end_datetime_type == 'endunk':
+        ep_dict.pop('temporal', None)
+
     return ep_dict
-
-
-def add_relations():
-    pass
 
 
 def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, ep_id_set: set,
@@ -106,6 +128,10 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
     '''
     arg_df_filtered = arg_df[arg_df['eventprimitive_id'] == ep_id]
 
+    # For multiple argument fillers
+    # arg_filler_dict['arg_sdf_id'] = gen_slot_type
+    arg_filler_dict = dict()
+
     for i, arg_row in arg_df_filtered.iterrows():
         arg_description = str(arg_row.get('description'))
         val_id = arg_row.get('arg_id')
@@ -118,10 +144,8 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
         entity_id = entity_id
         modality = arg_row.get('attribute')
         gen_slot_type = arg_row.get('general_slot_type')
+        value_sdf_id = arg_row.get('value_sdf_id')
 
-        # arg_role = ep_type + '/Slots/' + val_role
-        # arg_id = ep_id + '/' + val_role
-        arg_id = ep_id + '/' + val_id
         # Replace Entity ID with pointer to event
         if entity_id == "EMPTY_NA":
             entity_id = val_id
@@ -140,12 +164,38 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
             else:
                 entity_sdf_id = \
                     ep_df.loc[ep_df['eventprimitive_id'] == val_id, 'sdf_id'].tolist()[0]
-        participants_dict = {'@id': arg_sdf_id, 'roleName': gen_slot_type, 'entity': "kairos:NULL",
-                             'values': {'ta2entity': entity_sdf_id, 'provenance': "LDC Annotation"}}
-        # modality check: if modality != 'none':
-        # modality check:   participants_dict['modality'] = modality
-        arg_id = ep_id + '/' + val_id
-        # if arg is an entity
+
+        participant_list = ep_dict['participants']
+        participants_dict = {}
+        existing_participant = False
+        for participant in participant_list:
+            if gen_slot_type == arg_filler_dict[participant['@id']]:
+                existing_participant = True
+                participants_dict = participant
+
+        if not participants_dict:
+            participants_dict = {'@id': arg_sdf_id,
+                                 'roleName': gen_slot_type,
+                                 'entity': "kairos:NULL",
+                                 'values': []}
+            arg_filler_dict[arg_sdf_id] = gen_slot_type
+
+        val_dict = {'@id': value_sdf_id,
+                    'ta2entity': entity_sdf_id,
+                    'provenance': value_sdf_id}
+
+        # if argument is an event
+        if val_id[:2] == 'VP':
+            if val_id not in ep_id_set:
+                if val_id not in arg_ep_id_set:
+                    arg_ep_id_set.add(val_id)
+
+        if modality != 'EMPTY_OPT' and modality != "none":
+            if ',' in modality:
+                modality = modality.split(',')
+            val_dict['modality'] = modality
+
+        # if argument is an entity
         if val_id[:2] == 'AR':
             # participants_dict['entityTypes'] = arg_type
             qnode_name = entity_qnode_df.loc[entity_qnode_df['entity_id'] == entity_id,
@@ -154,45 +204,24 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
             if qnode_name == "EMPTY_NA" or qnode_name == "NIL":
                 qnode_name = entity_qnode_df.loc[entity_qnode_df['entity_id'] == entity_id,
                                                  'qnode_kb_id_type'].tolist()[0]
-            qlabel = ''
+            wd_label = ''
+            wd_description = ''
             if qnode_name != "EMPTY_TBD" and qnode_name != "EMPTY_NA" and qnode_name != "NIL":
-                qlabel = get_qnode_label(qnode_name, qnode_df_fp)
+                wd_label = get_wdnode_label(qnode_name, qnode_df_fp)
+                wd_description = get_wd_description(qnode_name, qnode_df_fp)
             if '|' in qnode_name:
                 qnode_name = ["wd:{}".format(str.strip()) for str in qnode_name.split('|')]
             else:
                 qnode_name = "wd:{}".format(qnode_name)
             # Only add entity if not already in entity dictionary
             entity_dict = {'@id': entity_sdf_id, 'name': arg_description,
-                           'ta2qnode': qnode_name,
-                           'ta2qlabel': qlabel}
+                           'ta2wd_node': qnode_name,
+                           'ta2wd_label': wd_label,
+                           'ta2wd_description': wd_description}
             add_entity(schema_dict, entity_dict)
-        # if arg is an event
 
-        val_dict = {'provenance': val_id}
-        # in case the argument is an event
-        if val_id[:2] == 'VP':
-            val_dict['entity'] = val_id
-            if val_id not in ep_id_set:
-                if val_id not in arg_ep_id_set:
-                    arg_ep_id_set.add(val_id)
-        # in case the argument is an entity
-        else:
-            if entity_id != 'EMPTY_NA':
-                val_dict['entity'] = entity_id
-            else:
-                val_dict['name'] = arg_description
-                # val_dict['entityTypes'] = arg_type
-        if modality != 'EMPTY_OPT' and modality != "none":
-            if ',' in modality:
-                modality = modality.split(',')
-            val_dict['modality'] = modality
-        participant_list = ep_dict['participants']
-        existing_participant = False
-        for participant in participant_list:
-            if participant['@id'] == arg_id:
-                existing_participant = True
-                participants_dict = participant
-        # participants_dict['values'].append(val_dict)
+        participants_dict['values'].append(val_dict)
+
         if not existing_participant:
             ep_dict['participants'].append(participants_dict)
 
@@ -200,6 +229,7 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
 
 
 def add_ontology_participant(ep_dict: dict, ep_role_list: list, role: str, role_types: str) -> list:
+    # This methods will be removed if not necessary for Phase2b
     role_types = role_types.replace(' ', '')
     role_type_list = role_types.split(',')
     entityTypes = []
@@ -211,6 +241,7 @@ def add_ontology_participant(ep_dict: dict, ep_role_list: list, role: str, role_
 
 
 def complete_ep_dict(ep_dict: dict):
+    # This methods will be removed if not necessary for Phase2b
     ep_role_list = []
     participant_list = ep_dict['participants']
     if participant_list:
@@ -222,6 +253,7 @@ def complete_ep_dict(ep_dict: dict):
 
 
 def get_correct_temporal_element(input_element: str):
+    # This methods will be removed if not necessary for Phase2b
     if input_element == 'x':
         return 'xx'
     else:
@@ -239,8 +271,6 @@ def get_correct_datetime(input_datetime_str: str) -> str:
     Returns:
 
     """
-    # Use datetime object to handle a variety of formats
-    # Produce datetime in
 
     year = "xx"
     month = "xx"
@@ -276,23 +306,29 @@ def add_ep(schema_dict: dict, ep_row: pd.Series, ep_id_set: set,
     ep_sdf_id = ep_row.get('sdf_id')
     ep_name = str(ep_row.get('description'))
     qnode_name = ep_row.get('qnode_type_id')
-    qlabel = ''
+    wd_label = ''
+    wd_description = ''
     if qnode_name != "EMPTY_TBD":
-        qlabel = get_qnode_label(qnode_name, qnode_df_fp)
+        wd_label = get_wdnode_label(qnode_name, qnode_df_fp)
+        wd_description = get_wd_description(qnode_name, qnode_df_fp)
     if '|' in qnode_name:
         qnode_name = ["wd:{}".format(str.strip()) for str in qnode_name.split('|')]
     else:
         qnode_name = "wd:{}".format(qnode_name)
-    ep_significance = ep_row.get('significance')
+    # ep_significance = ep_row.get('significance')
     ep_attribute = ep_row.get('attribute')
+
     if ep_attribute.__contains__(','):
         ep_attribute = ep_attribute.replace(' ', '')
-        ep_dict = {'@id': ep_sdf_id, 'name': qlabel, 'description': ep_name,
-                   'ta2qnode': qnode_name, 'ta2qlabel': qlabel,
-                   'ta1ref': 'kairos:NULL', "ta1explanation": "From Graph G.",
+        ep_dict = {'@id': ep_sdf_id, 'name': wd_label, 'description': ep_name,
+                   'ta2wd_node': qnode_name, 'ta2wd_label': wd_label,
+                   'ta2wd_description': wd_description,
+                   'ta1ref': 'none',
+                   'parent': schema_dict['events'][0]['@id'],
                    'provenance': ep_id,
-                   # 'significance': ep_significance,
-                   'temporal': {}, 'participants': []}
+                   'temporal': {},
+                   'participants': [],
+                   'outlinks': []}
         if ep_attribute != 'none':
             if ',' in ep_attribute:
                 ep_attribute = ep_attribute.split(',')
@@ -301,20 +337,27 @@ def add_ep(schema_dict: dict, ep_row: pd.Series, ep_id_set: set,
         if ep_attribute != 'EMPTY_OPT' and ep_attribute != "none":
             if ',' in ep_attribute:
                 ep_attribute = ep_attribute.split(',')
-            ep_dict = {'@id': ep_sdf_id, 'name': qlabel, 'description': ep_name,
-                       'ta2qnode': qnode_name, 'ta2qlabel': qlabel,
-                       'ta1ref': 'kairos:NULL', "ta1explanation": "From Graph G.",
+            ep_dict = {'@id': ep_sdf_id, 'name': wd_label, 'description': ep_name,
+                       'ta2wd_node': qnode_name, 'ta2wd_label': wd_label,
+                       'ta2wd_description': wd_description,
+                       'ta1ref': 'none',
+                       'parent': schema_dict['events'][0]['@id'],
                        'provenance': ep_id,
-                       # 'significance': ep_significance,
                        'modality': ep_attribute,
-                       'temporal': {}, 'participants': []}
+                       'temporal': {},
+                       'participants': [],
+                       'outlinks': []}
         else:
-            ep_dict = {'@id': ep_sdf_id, 'name': qlabel, 'description': ep_name,
-                       'ta2qnode': qnode_name, 'ta2qlabel': qlabel,
-                       'ta1ref': 'kairos:NULL', "ta1explanation": "From Graph G.",
+            ep_dict = {'@id': ep_sdf_id, 'name': wd_label, 'description': ep_name,
+                       'ta2wd_node': qnode_name, 'ta2wd_label': wd_label,
+                       'ta2wd_description': wd_description,
+                       'ta1ref': 'none', "ta1explanation": "From Graph G.",
+                       'parent': schema_dict['events'][0]['@id'],
                        'provenance': ep_id,
-                       # 'significance': ep_significance,
-                       'temporal': {}, 'participants': []}
+                       'temporal': {},
+                       'participants': [],
+                       'outlinks': []}
+
     # add temporal info to ep
     start_datetime_type = ep_row.get('start_datetime_type')
     start_datetime = ep_row.get('start_datetime')
@@ -326,19 +369,16 @@ def add_ep(schema_dict: dict, ep_row: pd.Series, ep_id_set: set,
         end_datetime = get_correct_datetime(end_datetime)
     ep_dict = add_temporal_info(ep_dict, start_datetime_type, start_datetime,
                                 end_datetime_type, end_datetime)
+
+    # add arguments info to ep
     ep_dict = add_arguments(schema_dict, ep_id, ep_sdf_id, ep_dict, ep_id_set,
                             arg_df, arg_ep_id_set,
                             qnode_df_fp, entity_qnode_df, ep_df, er_df)
+
     complete_ep_dict(ep_dict)
     # add ep to schema
     schema_dict['events'].append(ep_dict)
-    # Add event to children of events
-    ep_significance_str = "false"
-    if ep_significance == "critical":
-        ep_significance_str = 'true'
-    child_event = {'child': ep_sdf_id,
-                   'optional': ep_significance_str, 'importance': 1}
-    schema_dict['events'][0]['children'].append(child_event)
+    schema_dict['events'][0]['subgroup_events'].append(ep_sdf_id)
     ep_id_set.add(ep_id)
 
 
@@ -465,6 +505,11 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     arg_df['sdf_id'] = 'nist:Participants/' + arg_df['unique_str'] + '/' + arg_df['arg_id']
     curr_sel_num = max(arg_df['unique_num']) + 1
 
+    arg_df['value_unique_num'] = curr_sel_num + arg_df['row_num']
+    arg_df['value_unique_str'] = arg_df['value_unique_num'].apply(lambda x: str(x).zfill(5))
+    arg_df['value_sdf_id'] = 'nist:Values/' + arg_df['value_unique_str'] + '/' + arg_df['arg_id']
+    curr_sel_num = max(arg_df['value_unique_num']) + 1
+
     entity_qnode_df['row_num'] = np.arange(len(entity_qnode_df))
     entity_qnode_df['unique_num'] = curr_sel_num + entity_qnode_df['row_num']
     entity_qnode_df['unique_str'] = entity_qnode_df['unique_num'].apply(lambda x: str(x).zfill(5))
@@ -493,17 +538,18 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     qnode_df_fp = os.path.join(qnode_directory, 'dwd_qnode_table_v3.csv')
 
     # initiate sdf format
-    sdf_dict = {'@context': [], '@id': 'nist:Quizlet9/GraphG/' + complex_event,
-                'sdfVersion': '2.0',
-                'version': 'nist:Quizlet9GraphG:v2022.03.18',
+    sdf_dict = {'@context': [], '@id': 'nist:Submissions/Phase2b/GraphG/' + complex_event,
+                'sdfVersion': '2.3',
+                'version': 'nist:Phase2bGraphG:vDryRun1',
                 'ta2': True, 'task2': True, 'ceID': complex_event, 'instances': []}
-    sdf_dict['@context'].append('https://kairos-sdf.s3.amazonaws.com/context/kairos-v2.0.jsonld')
+
+    sdf_dict['@context'].append('https://kairos-sdf.s3.amazonaws.com/context/kairos-v2.3.jsonld')
     sdf_dict['@context'].append({'nist': 'https://nist.gov/kairos/'})
     # initiate a schema
     root_ep_id = 'nist:Events/00002/nist-GraphG-' + complex_event + '-root'
-    schema_dict = {'@id': 'nist:Instances/00001/nistQuizlet9GraphG',
-                   'name': 'nist:Quizlet9/GraphG' + complex_event,
-                   'confidence': 1, 'ta1ref': 'kairos::NULL',
+    schema_dict = {'@id': 'nist:Instances/00001/nistPhase2bGraphG',
+                   'name': 'nist:Phase2b/GraphG' + complex_event,
+                   'confidence': 1, 'ta1ref': 'SC0' + complex_event[2:],
                    'events': [], 'entities': [],
                    'relations': []}
     sdf_dict['instances'].append(schema_dict)
@@ -512,15 +558,30 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     arg_ep_id_set = set()
 
     # Add higher event as root so that we can indicate order with children and outlinks
-
     root_ep_name = 'nist:GraphG/' + complex_event + '/root'
     root_ep_description = 'Root Event for Graph G Complex Event for ' + complex_event
+
+    if 'ce20' in complex_event:
+        root_ta2wd_node = 'Q3241045'
+    elif 'ce2101' in complex_event:
+        root_ta2wd_node = 'Q124757'
+    elif 'ce2102' in complex_event:
+        root_ta2wd_node = 'Q1460420'
+    elif 'ce2103' in complex_event:
+        root_ta2wd_node = 'Q891854'
+    elif 'ce2104' in complex_event:
+        root_ta2wd_node = 'Q467011'
+    root_ta2wd_label = get_wdnode_label(root_ta2wd_node, qnode_df_fp)
+    root_ta2wd_description = get_wd_description(root_ta2wd_node, qnode_df_fp)
     root_ep_dict = {'@id': root_ep_id, 'name': root_ep_name, 'description': root_ep_description,
-                    'ta1ref': 'kairos:NULL', "ta1explanation": "NIST-Constructed Root Node.",
-                    'provenance': 'NIST-Constructed root node',
-                    'ta2qnode': 'wd:Q3241045', 'ta2qlabel': 'disease_outbreak',
+                    'ta1ref': 'none',
+                    'provenance': root_ep_id,
+                    'ta2wd_node': 'wd:' + root_ta2wd_node, 'ta2wd_label': root_ta2wd_label,
+                    'ta2wd_description': root_ta2wd_description,
+                    'parent': 'kairos:NULL',
+                    'isTopLevel': 'true',
                     'children_gate': "and",
-                    'children': []}
+                    'subgroup_events': []}
     schema_dict['events'].append(root_ep_dict)
 
     # add event primitives and arguments
@@ -531,7 +592,6 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     # recursively add argument events
     while len(arg_ep_id_set) > 0:
         temp = copy.deepcopy(arg_ep_id_set)
-        # print(temp)
         # add events in arg_ep_id_set
         arg_ep_id_set_loop = arg_ep_id_set.copy()
         for arg_ep_id in arg_ep_id_set_loop:
@@ -583,17 +643,20 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                     qnode_name = \
                         entity_qnode_df.loc[entity_qnode_df['entity_id'] == er_subject_ent_id,
                                             'qnode_kb_id_type'].tolist()[0]
-                qlabel = ''
+                wd_label = ''
+                wd_description = ''
                 if qnode_name != "EMPTY_TBD" and qnode_name != "EMPTY_NA":
-                    qlabel = get_qnode_label(qnode_name, qnode_df_fp)
+                    wd_label = get_wdnode_label(qnode_name, qnode_df_fp)
+                    wd_description = get_wd_description(qnode_name, qnode_df_fp)
                 if '|' in qnode_name:
                     qnode_name = ["wd:{}".format(str.strip()) for str in qnode_name.split('|')]
                 else:
                     qnode_name = "wd:{}".format(qnode_name)
                 # Only add entity if not already in entity dictionary
                 er_subject_ent_dict = {'@id': er_subject_ent_sdf_id, 'name': er_subject_ent_name,
-                                       'ta2qnode': qnode_name,
-                                       'ta2qlabel': qlabel}
+                                       'ta2wd_node': qnode_name,
+                                       'ta2wd_label': wd_label,
+                                       'ta2wd_description': wd_description}
 
                 add_entity(schema_dict, er_subject_ent_dict)
             # if it is an event argument
@@ -631,16 +694,19 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                     qnode_name = \
                         entity_qnode_df.loc[entity_qnode_df['entity_id'] == er_object_ent_id,
                                             'qnode_kb_id_type'].tolist()[0]
-                qlabel = ''
+                wd_label = ''
+                wd_description = ''
                 if qnode_name != "EMPTY_TBD" and qnode_name != "EMPTY_NA":
-                    qlabel = get_qnode_label(qnode_name, qnode_df_fp)
+                    wd_label = get_wdnode_label(qnode_name, qnode_df_fp)
+                    wd_description = get_wd_description(qnode_name, qnode_df_fp)
                 if '|' in qnode_name:
                     qnode_name = ["wd:{}".format(str.strip()) for str in qnode_name.split('|')]
                 else:
                     qnode_name = "wd:{}".format(qnode_name)
                 er_object_ent_dict = {'@id': er_object_ent_sdf_id, 'name': er_object_ent_name,
-                                      'ta2qnode': qnode_name,
-                                      'ta2qlabel': qlabel}
+                                      'ta2wd_node': qnode_name,
+                                      'ta2wd_label': wd_label,
+                                      'ta2wd_description': wd_description}
                 add_entity(schema_dict, er_object_ent_dict)
             # if it is an event subject
             if er_object_arg_id[:2] == 'VP':
@@ -660,18 +726,22 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                                                      er_object_ent_id, 'sdf_id'].tolist()[0]
 
             qnode_name = er_row.get('qnode_type_id')
-            qlabel = ''
+            wd_label = ''
+            wd_description = ''
             if qnode_name != "EMPTY_TBD":
-                qlabel = get_qnode_label(qnode_name, qnode_df_fp)
+                wd_label = get_wdnode_label(qnode_name, qnode_df_fp)
+                wd_description = get_wd_description(qnode_name, qnode_df_fp)
             # qnodes are mostly missing; set to relation predicate for now
             er_dict = {'@id': er_sdf_id, 'name': er_name,
                        'relationSubject': er_subject_ent_sdf_id,
                        'relationSubject_prov': er_subject_arg_id,
-                       'relationPredicate': qnode_name,
+                       'wd_node': qnode_name,
+                       'wd_label': wd_label,
+                       'wd_description': wd_description,
                        'relationObject': er_object_ent_sdf_id,
                        'relationObject_prov': er_object_arg_id,
-                       'relationProvenance': 'LDC Annotation',
-                       'ta1ref': 'kairos:NULL'}
+                       'relationProvenance': er_sdf_id,
+                       'ta1ref': 'none'}
             if er_modality != "none" and er_modality != "generic":
                 # Check for a split and add if a list
                 if ',' in er_modality:
@@ -684,12 +754,10 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     temporal_df = temporal_df[['eventprimitive_id', 'layer1_order1_type', 'layer1_order1_value',
                                'layer1_order2_type', 'layer1_order2_value', 'sdf_id']]
     temporal_df = temporal_df.loc[temporal_df['layer1_order1_type'] != 'unknown']
-    # add orders
-    cur_rel_sel_num = 50000
+    all_outlinks = set()
     for i, i_row in temporal_df.iterrows():
         # We do not use the row ide with i_id = i_row.get('eventprimitive_id')
         i_sdf_id = i_row.get('sdf_id')
-        j_list = []
         for j, j_row in temporal_df.iterrows():
             if i != j:
                 if assess_order_pair(i_row.get('layer1_order1_type'),
@@ -708,23 +776,22 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                                      j_row.get('layer2_order1_value'),
                                      j_row.get('layer2_order2_type'),
                                      j_row.get('layer2_order2_value')):
-                    j_list.append(j_row.get('sdf_id'))
+                    all_outlinks.add((i_sdf_id, j_row.get('sdf_id')))
 
-        for j_sdf_id in j_list:
-            er_dict = {'@id': 'nist:Relations/{}/GraphG-{}-Bef-{}'.format(cur_rel_sel_num,
-                                                                          i_sdf_id, j_sdf_id),
-                       'name': '{} happens before {}'.format(i_sdf_id, j_sdf_id),
-                       'relationSubject': i_sdf_id,
-                       'relationSubject_prov': 'LDC Temporal Annotation',
-                       'relationPredicate': "wd:Q79030196",
-                       'relationObject': j_sdf_id,
-                       'relationObject_prov': 'LDC Temporal Annotation',
-                       'relationProvenance': 'LDC Annotation',
-                       'ta1ref': 'kairos:NULL'}
-            cur_rel_sel_num += 1
-            # There are no modalities for this relation
-            schema_dict['relations'].append(er_dict)
-        # Return the updated version for future increments
+    all_outlinks_copy = all_outlinks.copy()
+    for i1, j1 in all_outlinks_copy:
+        for i2, j2 in all_outlinks_copy:
+            if i1 != i2 and j1 != j2 and \
+                    j1 == i2 and (i1, j2) in all_outlinks:
+                all_outlinks.remove((i1, j2))
+
+    for i, j in all_outlinks:
+        for e in schema_dict['events']:
+            if e['@id'] == i:
+                e['outlinks'].append(j)
+
+    # if len(schema_dict['events']['outlinks']) == 0:
+    #     schema_dict['events'].pop('outlinks', None)
 
     # Make output directory if it does not exist
     if not os.path.isdir(output_graph_g_directory):
@@ -781,7 +848,7 @@ def generate_graphg(config_filepath, config_mode) -> None:
 
 
 def convert_owg_to_qnode(wikidata_fp):
-
+    # This methods will be removed if not necessary for Phase2b
     wikidata_fp = '/Users/pcf/soma_Documents/KAIROS/KAIROS_TE_Inputs/FY2021/xpo_v3.json'
     output_fp = '/Users/pcf/soma_Documents/KAIROS/KAIROS_NIST_Outputs/dwd_qnode_table_v3.csv'
     wikidata_df = pd.DataFrame(columns=['qnode', 'qlabel'])

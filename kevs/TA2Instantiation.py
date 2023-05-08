@@ -6,8 +6,12 @@ import kevs.produce_event_trees
 
 from kevs import load_json_data as load
 
-
+"""
+change/add field names (wd_node, wd_label, wd_description, temporal, child)
+"""
 # Initialize TA2 Data Frames
+
+
 def init_ta2_schema_dataframe() -> pd.DataFrame:
     schema_df = pd.DataFrame(columns=['file_name', 'ta2_team_name', 'ta1_team_name', 'sdfVersion',
                                       'schema_instance_id', 'schema_id', 'schema_name',
@@ -26,26 +30,26 @@ def init_ta2_schema_dataframe() -> pd.DataFrame:
 def init_ta2_ev_dataframe() -> pd.DataFrame:
     ev_df = pd.DataFrame(columns=['ta2_team_name', 'ta1_team_name', 'schema_instance_id',
                                   'schema_id', 'instance_id', 'instance_id_short', 'ce_id', 'task',
-                                  'instance_name', 'ev_id', 'ev_name', 'ev_type', 'ev_qnode',
-                                  'ev_qlabel',
-                                  'ev_ta2qnode', 'ev_ta2qlabel', 'ev_ta1ref',
+                                  'instance_name', 'ev_id', 'ev_name', 'ev_type', 'ev_wd_node',
+                                  'ev_wd_label', 'ev_wd_description',
+                                  'ev_ta2wd_node', 'ev_ta2wd_label', 'ev_ta2wd_description'
+                                  'ev_ta1ref',
                                   'ev_ta2_ce_instance', 'ev_description', 'ev_goal',
-                                  'ev_minDuration', 'ev_maxDuration',
-                                  'ev_TA1explanation', 'ev_privateData', 'ev_comment',
+                                  'ev_ta1explanation', 'ev_privateData', 'ev_comment',
                                   'ev_aka', 'ev_template',
                                   'ev_repeatable', 'ev_child_list', 'ev_arg_list',
                                   'ev_provenance', 'ev_confidence', 'ev_confidence_val',
                                   'ev_prediction_provenance',
-                                  'ev_modality', 'ev_temporal', 'ev_TA2handle'])
+                                  'ev_duration', 'ev_earliestStartTime', 'ev_latestStartTime',
+                                  'ev_earliestEndTime', 'ev_latestEndTime',
+                                  'ev_absoluteTime', 'ev_modality', 'ev_outlinks'])
 
     return ev_df
 
 
 def init_ta2_children_dataframe() -> pd.DataFrame:
     children_df = pd.DataFrame(columns=['ta2_team_name', 'ta1_team_name', 'schema_instance_id',
-                                        'schema_id', 'ev_id', 'child_id', 'child_ta2_ce_instance',
-                                        'child_optional',
-                                        'child_comment', 'child_importance', 'child_outlinks'])
+                                        'schema_id', 'ev_id', 'child_ev_id'])
 
     return children_df
 
@@ -53,7 +57,8 @@ def init_ta2_children_dataframe() -> pd.DataFrame:
 def init_ta2_arg_dataframe() -> pd.DataFrame:
     arg_df = pd.DataFrame(columns=['ta2_team_name', 'ta1_team_name', 'schema_instance_id',
                                    'schema_id', 'instance_id',  'ev_id',
-                                   'arg_id', 'arg_role_name', 'arg_entity', 'arg_ta2entity',
+                                   'arg_id', 'arg_role_name', 'arg_entity',
+                                   'arg_value_id', 'arg_ta2entity',
                                    'arg_ta2confidence',
                                    'arg_ta2provenance'])
 
@@ -63,9 +68,9 @@ def init_ta2_arg_dataframe() -> pd.DataFrame:
 def init_ta2_ent_dataframe() -> pd.DataFrame:
     ent_df = pd.DataFrame(columns=['ta2_team_name', 'ta1_team_name', 'schema_instance_id',
                                    'schema_id', 'instance_id',  'ent_id', 'ent_name',
-                                   'ent_qnode', 'ent_qlabel', 'ent_comment',
-                                   'ent_TA2qnode', 'ent_TA2qlabel', 'ent_provenance',
-                                   'ent_confidence'])
+                                   'ent_wd_node', 'ent_wd_label', 'ent_wd_description',
+                                   'ent_ta2wd_node', 'ent_ta2wd_label',
+                                   'ent_ta2wd_description'])
 
     return ent_df
 

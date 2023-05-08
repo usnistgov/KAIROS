@@ -67,7 +67,7 @@ def compute_graph_g_stats(output_dir, ta2_collection,
 
     for ce in complex_event_list:
         # Get Graph G instances and annotation
-        graphg_key = "GRAPHG|GRAPHG|{}|nist:Instances/00001/nistQuizlet9GraphG". \
+        graphg_key = "GRAPHG|GRAPHG|{}|nist:Instances/00001/nistPhase2bGraphG". \
             format(ce)
         graphg_ceinstance = graph_g_collection.ta2dict['GRAPHG'].ta2dict[
             graphg_key]
@@ -150,7 +150,7 @@ def compute_graph_g_stats(output_dir, ta2_collection,
                         ta2_graphg_arg_df['graphg_arg_id'] = np.nan
 
                     ins_ta2_graphg_ev_df = ta2_graphg_ev_df.loc[
-                        (ta2_graphg_ev_df['ev_ta1ref'] != "kairos:NULL") &
+                        (ta2_graphg_ev_df['ev_ta1ref'] != "none") &
                         pd.notna(ta2_graphg_ev_df['ev_provenance']), :]
                     ins_ta2_graphg_arg_df = ta2_graphg_arg_df.loc[ta2_graphg_arg_df['ev_id'].isin(
                         ins_ta2_graphg_ev_df['ev_id'])]
@@ -189,7 +189,7 @@ def compute_graph_g_stats(output_dir, ta2_collection,
                     num_graphg_ev_ref_ta2 = ta2_graphg_ev_df['graphg_ev_id'][
                         pd.notna(ta2_graphg_ev_df['ev_provenance'])].nunique()
                     num_ins_graphg_ev_ref_ta2 = ta2_graphg_ev_df['graphg_ev_id'][
-                        (ta2_graphg_ev_df['ev_ta1ref'] != "kairos:NULL")
+                        (ta2_graphg_ev_df['ev_ta1ref'] != "none")
                         & (pd.notna(ta2_graphg_ev_df['ev_provenance']))].nunique()
                     try:
                         per_of_ins_graphg_ev = num_ins_graphg_ev_ref_ta2 \
@@ -203,7 +203,7 @@ def compute_graph_g_stats(output_dir, ta2_collection,
                     num_ta2_ev_linking_graphg = ta2_graphg_ev_df['ev_id'][
                         pd.notna(ta2_graphg_ev_df['ev_provenance'])].nunique()
                     num_ins_ta2_ev_linking_graphg = ta2_graphg_ev_df['ev_id'][
-                        (ta2_graphg_ev_df['ev_ta1ref'] != "kairos:NULL")
+                        (ta2_graphg_ev_df['ev_ta1ref'] != "none")
                         & (pd.notna(ta2_graphg_ev_df['ev_provenance']))].nunique()
                     try:
                         per_of_ins_ta2_ev_linking_g = num_ins_ta2_ev_linking_graphg \

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import yaml
 import ast
-
+import typing
 from collections import deque
 
 
@@ -40,7 +40,7 @@ def is_ta2_event_predicted(ev_id: str, ta2_ce_instance) -> bool:
     return is_pred
 
 
-def is_event_ins_or_pred(ev_id: str, ta2_ce_instance) -> (bool, bool):
+def is_event_ins_or_pred(ev_id: str, ta2_ce_instance) -> typing.Tuple[bool, bool]:
     """
 
     Args:

@@ -29,37 +29,20 @@ def generate_graph_g_stats(config_filepath: str, config_mode: str, score_tasks: 
                                         config[config_mode]["task2_annotation_subdir"])
 
     # subfolders of root_directory/output_subdir/eval_phase_subdir
-    ta1_score_dir = os.path.join(output_dir_prefix,
-                                 config[config_mode]["ta1_score_subdir"])
     ta2_task1_score_dir = os.path.join(output_dir_prefix,
                                        config[config_mode]["ta2_task1_score_subdir"])
     ta2_task2_score_dir = os.path.join(output_dir_prefix,
                                        config[config_mode]["ta2_task2_score_subdir"])
-    ta1_analysis_dir = os.path.join(output_dir_prefix,
-                                    config[config_mode]["ta1_analysis_subdir"])
-    ta2_task1_analysis_dir = os.path.join(output_dir_prefix,
-                                          config[config_mode]["ta2_task1_analysis_subdir"])
-    ta2_task2_analysis_dir = os.path.join(output_dir_prefix,
-                                          config[config_mode]["ta2_task2_analysis_subdir"])
     graph_g_extraction_dir = os.path.join(output_dir_prefix,
                                           config[config_mode]["graph_g_extraction_subdir"])
     graph_g_stats_dir = os.path.join(output_dir_prefix,
                                      config[config_mode]["graph_g_analysis_subdir"])
 
     # if TA1 or TA2 extraction directories do not exist, throw error message
-    if not os.path.isdir(ta1_score_dir) or not os.path.isdir(ta2_task1_score_dir) \
+    if not os.path.isdir(ta2_task1_score_dir) \
             or not os.path.isdir(ta2_task2_score_dir):
-        sys.exit('Directory not found: ' + ta1_score_dir + ' or ' + ta2_task1_score_dir +
+        sys.exit('Directory not found: ' + ' or ' + ta2_task1_score_dir +
                  ' or ' + ta2_task2_score_dir)
-    # if TA1 analysis directories do not exist, create them
-    if not os.path.isdir(ta1_analysis_dir):
-        os.makedirs(ta1_analysis_dir)
-    # if TA2 Task1 analysis directories do not exist, create them
-    if not os.path.isdir(ta2_task1_analysis_dir):
-        os.makedirs(ta2_task1_analysis_dir)
-    # if TA2 Task2 analysis directories do not exist, create them
-    if not os.path.isdir(ta2_task2_analysis_dir):
-        os.makedirs(ta2_task2_analysis_dir)
 
     # TA2 Task 2
     ta2_task2_collection = TA2Collection(is_task2=True)

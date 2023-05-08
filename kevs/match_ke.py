@@ -354,8 +354,8 @@ def match_ke_ce_elements(task1_ceannotation, ta2_ceinstance, graphg_ceinstance,
 
     ta2_earg_df = \
         ta2_ceinstance.arg_df.merge(ta2_ceinstance.ent_df.loc[:,
-                                    ['ent_id', 'ent_name', 'ent_qnode', 'ent_qlabel',
-                                     'ent_TA2qnode', 'ent_TA2qlabel']], left_on='arg_ta2entity',
+                                    ['ent_id', 'ent_name', 'ent_wd_node', 'ent_wd_label',
+                                     'ent_ta2wd_node', 'ent_ta2wd_label']], left_on='arg_ta2entity',
                                     right_on='ent_id', how="inner")
 
     ann_argfilt_df = \
@@ -372,15 +372,16 @@ def match_ke_ce_elements(task1_ceannotation, ta2_ceinstance, graphg_ceinstance,
     ann_earg_df.drop(columns="str", inplace=True)
 
     ta2_proc_qnode_df = process_ta2_qnode_fields(ta2_ev_df, id_field_name="ev_id",
-                                                 qnode_field_name="ev_ta2qnode",
-                                                 qnode_backup_field_name="ev_qnode")
+                                                 qnode_field_name="ev_ta2wd_node",
+                                                 qnode_backup_field_name="ev_wd_node")
     ta2_earg_proc_qnode_df = process_ta2_qnode_fields(ta2_earg_df, id_field_name="arg_id",
-                                                      qnode_field_name="ent_TA2qnode",
-                                                      qnode_backup_field_name="ent_qnode")
+                                                      qnode_field_name="ent_ta2wd_node",
+                                                      qnode_backup_field_name="ent_wd_node")
 
     ann_proc_qnode_df = process_annotation_qnode_fields(annotation_ev_df,
                                                         id_field_name="eventprimitive_id",
                                                         qnode_field_name="qnode_type_id")
+    # check later: qnode_type_id in annotations
 
     if ann_earg_df.loc[pd.isna(ann_earg_df["qnode_kb_id_identity"]) |
                        (ann_earg_df["qnode_kb_id_identity"] == "NIL") |

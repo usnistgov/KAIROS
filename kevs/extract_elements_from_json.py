@@ -189,9 +189,9 @@ def get_ta1_events(ta1_libraryfile, schema: json, schema_id: str,
         if ev_list:
             for event in ev_list:
                 # initiate event elements
-                ev_id = ev_name = ev_type = ev_qnode = ev_qlabel = None
+                ev_id = ev_name = ev_type = ev_wd_node = ev_wd_label = None
                 ev_children_gate = ev_description = ev_goal = None
-                ev_minDuration = ev_maxDuration = ev_TA1explanation = None
+                ev_minDuration = ev_maxDuration = ev_ta1explanation = None
                 ev_privateData = ev_comment = None
                 ev_aka = ev_template = ev_repeatable = None
                 ev_child_list = []
@@ -203,10 +203,10 @@ def get_ta1_events(ta1_libraryfile, schema: json, schema_id: str,
                     ev_name = event['name']
                 if '@type' in event.keys():
                     ev_type = event['@type']
-                if 'qnode' in event.keys():
-                    ev_qnode = event['qnode']
-                if 'qlabel' in event.keys():
-                    ev_qlabel = event['qlabel']
+                if 'wd_node' in event.keys():
+                    ev_wd_node = event['qnode']
+                if 'wd_label' in event.keys():
+                    ev_wd_label = event['qlabel']
                 if 'children_gate' in event.keys():
                     ev_children_gate = event['children_gate']
                 if 'description' in event.keys():
@@ -218,7 +218,7 @@ def get_ta1_events(ta1_libraryfile, schema: json, schema_id: str,
                 if 'maxDuration' in event.keys():
                     ev_maxDuration = event['maxDuration']
                 if 'ta1explanation' in event.keys():
-                    ev_TA1explanation = event['ta1explanation']
+                    ev_ta1explanation = event['ta1explanation']
                 if 'privateData' in event.keys():
                     ev_privateData = event['privateData']
                 if 'comment' in event.keys():
@@ -242,11 +242,11 @@ def get_ta1_events(ta1_libraryfile, schema: json, schema_id: str,
                     ev_row = {
                         'schema_id': schema_id, 'ev_id': ev_id, 'ev_name': ev_name,
                         'ev_type': ev_type,
-                        'ev_qnode': ev_qnode, 'ev_qlabel': ev_qlabel,
+                        'ev_wd_node': ev_wd_node, 'ev_wd_label': ev_wd_label,
                         'ev_children_gate': ev_children_gate,
                         'ev_description': ev_description, 'ev_goal': ev_goal,
                         'ev_minDuration': ev_minDuration,
-                        'ev_maxDuration': ev_maxDuration, 'ev_TA1explanation': ev_TA1explanation,
+                        'ev_maxDuration': ev_maxDuration, 'ev_ta1explanation': ev_ta1explanation,
                         'ev_privateData': ev_privateData, 'ev_comment': ev_comment,
                         'ev_aka': ev_aka,
                         'ev_template': ev_template, 'ev_repeatable': ev_repeatable,
@@ -263,8 +263,13 @@ def get_ta1_events(ta1_libraryfile, schema: json, schema_id: str,
     return
 
 
+"""
+to do: update TA1 part later
+"""
 # extract Phase 2 TA1 event, argument, children, entity, and relation information from json files
 # and save as csv files
+
+
 def extract_ta1_elements_from_json_file(ta1_team_name: str, base_file_name: str,
                                         ta1_libraryfile,
                                         json_dict: dict, file_name: str):
@@ -343,47 +348,34 @@ def extract_ta1_elements_from_json_file(ta1_team_name: str, base_file_name: str,
     return ta1_libraryfile
 
 
+"""
+updated
+"""
 # TA2 Methods
+
+
 def get_ta2_children(children_df: pd.DataFrame, event: json, ev_child_list: list, schema_id: str,
                      ev_id: str, instance_id: str, file_name: str) -> pd.DataFrame:
     instance_id_short = str(instance_id.split('/')[1])
-    if 'children' in event.keys():
-        children = event['children']
-        if children:
+    if 'subgroup_events' in event.keys():
+        children = event['subgroup_events']
+        if len(children) > 0:
             for child in children:
-                # initiate child elements
-                child_id = child_children_gate = child_optional = child_comment = None
-                child_importance = child_outlinks = None
-                if 'child' in child.keys():
-                    child_id = child['child']
-                if 'children_gate' in child.keys():
-                    child_children_gate = child['children_gate']
-                if 'optional' in child.keys():
-                    child_optional = child['optional']
-                if 'comment' in child.keys():
-                    child_comment = child['comment']
-                if 'importance' in child.keys():
-                    child_importance = child['importance']
-                if 'outlinks' in child.keys():
-                    child_outlinks = child['outlinks']
-                # if the child_id is not none, add child_id to ev_child_list
-                # and add the children_row to children_df
-                if child_id is not None:
-                    ev_child_list.append(child_id)
-                    children_row = {
-                        'schema_instance_id': file_name + '_' + instance_id_short,
-                        'schema_id': schema_id, 'instance_id': instance_id, 'ev_id': ev_id,
-                        'child_id': child_id,
-                        'child_children_gate': child_children_gate,
-                        'child_optional': child_optional,
-                        'child_comment': child_comment, 'child_importance': child_importance,
-                        'child_outlinks': child_outlinks
-                    }
-                    children_df = pd.concat([children_df,
-                                             pd.DataFrame([children_row])],
-                                            ignore_index=True)
-
+                ev_child_list.append(child)
+                children_row = {
+                    'schema_instance_id': file_name + '_' + instance_id_short,
+                    'schema_id': schema_id, 'instance_id': instance_id, 'ev_id': ev_id,
+                    'child_ev_id': child
+                }
+                children_df = pd.concat([children_df,
+                                        pd.DataFrame([children_row])],
+                                        ignore_index=True)
     return children_df
+
+
+"""
+updated
+"""
 
 
 def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
@@ -395,7 +387,7 @@ def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
         if participants:
             for participant in participants:
                 # initiate argument elements
-                arg_id = arg_role_name = arg_entity = None
+                arg_id = arg_role_name = arg_entity = arg_value_id = None
                 arg_ta2entity = arg_ta2confidence = arg_ta2provenance = None
                 if '@id' in participant.keys():
                     arg_id = participant['@id']
@@ -412,6 +404,8 @@ def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
                 if 'values' in participant.keys():
                     if isinstance(participant['values'], list):
                         for value in participant['values']:
+                            if '@id' in value.keys():
+                                arg_value_id = value['@id']
                             if 'ta2entity' in value.keys():
                                 arg_ta2entity = value['ta2entity']
                             if 'confidence' in value.keys():
@@ -424,12 +418,15 @@ def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
                                 'schema_id': schema_id, 'instance_id': instance_id,
                                 'ev_id': ev_id, 'arg_id': arg_id,
                                 'arg_role_name': arg_role_name, 'arg_entity': arg_entity,
+                                'arg_value_id': arg_value_id,
                                 'arg_ta2entity': arg_ta2entity,
                                 'arg_ta2confidence': arg_ta2confidence,
                                 'arg_ta2provenance': arg_ta2provenance
                             }
                             arg_df = pd.concat([arg_df, pd.DataFrame([arg_row])], ignore_index=True)
                     else:
+                        if '@id' in participant['values'].keys():
+                            arg_value_id = participant['values']['@id']
                         if 'ta2entity' in participant['values'].keys():
                             arg_ta2entity = participant['values']['ta2entity']
                         if 'confidence' in participant['values'].keys():
@@ -443,6 +440,7 @@ def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
                             'schema_id': schema_id, 'instance_id': instance_id,
                             'ev_id': ev_id, 'arg_id': arg_id,
                             'arg_role_name': arg_role_name, 'arg_entity': arg_entity,
+                            'arg_value_id': arg_value_id,
                             'arg_ta2entity': arg_ta2entity, 'arg_ta2confidence': arg_ta2confidence,
                             'arg_ta2provenance': arg_ta2provenance
                         }
@@ -454,12 +452,18 @@ def get_ta2_arguments(arg_df: pd.DataFrame, event: json, ev_arg_list: list,
                         'schema_id': schema_id, 'instance_id': instance_id,
                         'ev_id': ev_id, 'arg_id': arg_id,
                         'arg_role_name': arg_role_name, 'arg_entity': arg_entity,
+                        'arg_value_id': "kairos:NULL",
                         'arg_ta2entity': "kairos:NULL", 'arg_ta2confidence': '0',
                         'arg_ta2provenance': "kairos:NULL"
                     }
                     arg_df = pd.concat([arg_df, pd.DataFrame([arg_row])], ignore_index=True)
 
     return arg_df
+
+
+"""
+updated
+"""
 
 
 def get_ta2_entities(ent_df: pd.DataFrame, schema: json, entity_list: list, schema_id: str,
@@ -470,26 +474,26 @@ def get_ta2_entities(ent_df: pd.DataFrame, schema: json, entity_list: list, sche
         if ent_list:
             for entity in ent_list:
                 # initiate entity elements
-                ent_id = ent_name = ent_qnode = ent_qlabel = ent_comment = None
-                ent_TA2qnode = ent_TA2qlabel = ent_provenance = ent_confidence = None
+                ent_id = ent_name = ent_wd_node = ent_wd_label = None
+                ent_ta2wd_node = ent_ta2wd_label = None
+                ent_wd_description = ent_ta2wd_description = None
                 if '@id' in entity.keys():
                     ent_id = entity['@id']
                 if 'name' in entity.keys():
                     ent_name = entity['name']
-                if 'qnode' in entity.keys():
-                    ent_qnode = entity['qnode']
-                if 'qlabel' in entity.keys():
-                    ent_qlabel = entity['qlabel']
-                if 'comment' in entity.keys():
-                    ent_comment = entity['comment']
-                if 'ta2qnode' in entity.keys():
-                    ent_TA2qnode = entity['ta2qnode']
-                if 'ta2qlabel' in entity.keys():
-                    ent_TA2qlabel = entity['ta2qlabel']
-                if 'provenance' in entity.keys():
-                    ent_provenance = entity['provenance']
-                if 'confidence' in entity.keys():
-                    ent_confidence = entity['confidence']
+                if 'wd_node' in entity.keys():
+                    ent_wd_node = entity['wd_node']
+                if 'wd_label' in entity.keys():
+                    ent_wd_label = entity['wd_label']
+                if 'wd_description' in entity.keys():
+                    ent_wd_description = entity['wd_description']
+                if 'ta2wd_node' in entity.keys():
+                    ent_ta2wd_node = entity['ta2wd_node']
+                if 'ta2wd_label' in entity.keys():
+                    ent_ta2wd_label = entity['ta2wd_label']
+                if 'ta2wd_description' in entity.keys():
+                    ent_ta2wd_description = entity['ta2wd_description']
+
                 # add ent_id to entity_list and add ent_row to ent_df
                 if ent_id is not None:
                     entity_list.append(ent_id)
@@ -498,15 +502,21 @@ def get_ta2_entities(ent_df: pd.DataFrame, schema: json, entity_list: list, sche
                 ent_row = {
                     'schema_instance_id': file_name + '_' + instance_id_short,
                     'schema_id': schema_id, 'instance_id': instance_id, 'ent_id': ent_id,
-                    'ent_name': ent_name, 'ent_qnode': ent_qnode,
-                    'ent_qlabel': ent_qlabel, 'ent_comment': ent_comment,
-                    'ent_TA2qnode': ent_TA2qnode,
-                    'ent_TA2qlabel': ent_TA2qlabel, 'ent_provenance': ent_provenance,
-                    'ent_confidence': ent_confidence
+                    'ent_name': ent_name, 'ent_wd_node': ent_wd_node,
+                    'ent_wd_label': ent_wd_label,
+                    'ent_wd_description': ent_wd_description,
+                    'ent_ta2wd_node': ent_ta2wd_node,
+                    'ent_ta2wd_label': ent_ta2wd_label,
+                    'ent_ta2wd_description': ent_ta2wd_description
                 }
                 ent_df = pd.concat([ent_df, pd.DataFrame([ent_row])], ignore_index=True)
 
     return ent_df
+
+
+"""
+updated
+"""
 
 
 def get_ta2_relations(rel_df: pd.DataFrame, schema: json, relation_list: list, schema_id: str,
@@ -573,6 +583,11 @@ def get_ta2_relations(rel_df: pd.DataFrame, schema: json, relation_list: list, s
     return rel_df
 
 
+"""
+updated
+"""
+
+
 def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
                    event_list: list, instance_name: str, instance_id: str, file_name: str,
                    relation_list: list):
@@ -586,15 +601,18 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
         if ev_list:
             for event in ev_list:
                 # initiate event elements
-                ev_id = ev_name = ev_type = ev_qnode = ev_qlabel = ev_children_gate = None
-                ev_description = ev_goal = ev_ta1ref = None
-                ev_ta2qnode = ev_ta2qlabel = None
-                ev_minDuration = ev_maxDuration = ev_TA1explanation = None
+                ev_id = ev_name = ev_type = ev_wd_node = ev_wd_label = ev_children_gate = None
+                ev_wd_description = ev_description = ev_goal = ev_ta1ref = None
+                ev_ta2wd_node = ev_ta2wd_label = ev_ta2wd_description = None
+                ev_ta1explanation = None
                 ev_privateData = ev_comment = None
                 ev_aka = ev_template = ev_repeatable = None
                 ev_provenance = ev_prediction_provenance = None
-                ev_confidence = ev_confidence_val = ev_modality = ev_temporal = None
-                ev_TA2handle = None
+                ev_confidence = ev_confidence_val = ev_modality = None
+                ev_duration = ev_earliestStartTime = ev_latestStartTime = None
+                ev_earliestEndTime = ev_latestEndTime = ev_absoluteTime = None
+                ev_outlinks = None
+                ev_parent = None
                 ev_child_list = []
                 ev_arg_list = []
                 # get event elements
@@ -604,28 +622,30 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
                     ev_name = event['name']
                 if '@type' in event.keys():
                     ev_type = event['@type']
-                if 'qnode' in event.keys():
-                    ev_qnode = event['qnode']
-                if 'qlabel' in event.keys():
-                    ev_qlabel = event['qlabel']
-                if 'ta2qnode' in event.keys():
-                    ev_ta2qnode = event['ta2qnode']
-                if 'ta2qlabel' in event.keys():
-                    ev_ta2qlabel = event['ta2qlabel']
+                if 'wd_node' in event.keys():
+                    ev_wd_node = event['wd_node']
+                if 'wd_node' in event.keys():
+                    ev_wd_label = event['wd_label']
+                if 'wd_description' in event.keys():
+                    ev_wd_description = event['wd_description']
+                if 'ta2wd_node' in event.keys():
+                    ev_ta2wd_node = event['ta2wd_node']
+                if 'ta2wd_label' in event.keys():
+                    ev_ta2wd_label = event['ta2wd_label']
+                if 'ta2wd_description' in event.keys():
+                    ev_wd_description = event['ta2wd_description']
                 if 'ta1ref' in event.keys():
                     ev_ta1ref = event['ta1ref']
+                if 'parent' in event.keys():
+                    ev_parent = event['parent']
                 if 'children_gate' in event.keys():
                     ev_children_gate = event['children_gate']
                 if 'description' in event.keys():
                     ev_description = event['description']
                 if 'goal' in event.keys():
                     ev_goal = event['goal']
-                if 'minDuration' in event.keys():
-                    ev_minDuration = event['minDuration']
-                if 'maxDuration' in event.keys():
-                    ev_maxDuration = event['maxDuration']
                 if 'ta1explanation' in event.keys():
-                    ev_TA1explanation = event['ta1explanation']
+                    ev_ta1explanation = event['ta1explanation']
                 if 'privateData' in event.keys():
                     ev_privateData = event['privateData']
                 if 'comment' in event.keys():
@@ -646,9 +666,20 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
                 if 'modality' in event.keys():
                     ev_modality = event['modality']
                 if 'temporal' in event.keys():
-                    ev_temporal = event['temporal']
-                if 'TA2handle' in event.keys():
-                    ev_TA2handle = event['TA2handle']
+                    if 'duration' in event['temporal'].keys():
+                        ev_duration = event['temporal']['duration']
+                    if 'earliestStartTime' in event['temporal'].keys():
+                        ev_earliestStartTime = event['temporal']['earliestStartTime']
+                    if 'latestStartTime' in event['temporal'].keys():
+                        ev_latestStartTime = event['temporal']['latestStartTime']
+                    if 'earliestEndTime' in event['temporal'].keys():
+                        ev_earliestEndTime = event['temporal']['earliestEndTime']
+                    if 'latestEndTime' in event['temporal'].keys():
+                        ev_latestEndTime = event['temporal']['latestEndTime']
+                    if 'absoluteTime' in event['temporal'].keys():
+                        ev_absoluteTime = event['temporal']['latestEndTime']
+                if 'outlinks' in event.keys():
+                    ev_outlinks = event['outlinks']
                 # get children information
                 ta2_ceinstance.children_df = get_ta2_children(ta2_ceinstance.children_df, event,
                                                               ev_child_list, schema_id, ev_id,
@@ -667,23 +698,31 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
                         'task': task_str,
                         'instance_id': instance_id, 'instance_id_short': instance_id_short,
                         'ev_id': ev_id, 'ev_name': ev_name, 'ev_type': ev_type,
-                        'ev_qnode': ev_qnode, 'ev_qlabel': ev_qlabel,
-                        'ev_ta2qnode': ev_ta2qnode, 'ev_ta2qlabel': ev_ta2qlabel,
+                        'ev_wd_node': ev_wd_node, 'ev_wd_label': ev_wd_label,
+                        'ev_wd_description': ev_wd_description,
+                        'ev_ta2wd_node': ev_ta2wd_node, 'ev_ta2wd_label': ev_ta2wd_label,
+                        'ev_ta2wd_description': ev_ta2wd_description,
                         'ev_ta1ref': ev_ta1ref,
                         'ev_children_gate': ev_children_gate,
                         'ev_description': ev_description, 'ev_goal': ev_goal,
-                        'ev_minDuration': ev_minDuration,
-                        'ev_maxDuration': ev_maxDuration, 'ev_TA1explanation': ev_TA1explanation,
+                        'ev_ta1explanation': ev_ta1explanation,
                         'ev_privateData': ev_privateData, 'ev_comment': ev_comment,
                         'ev_aka': ev_aka,
                         'ev_template': ev_template, 'ev_repeatable': ev_repeatable,
+                        'ev_parent': ev_parent,
                         'ev_child_list': ev_child_list,
                         'ev_arg_list': ev_arg_list, 'ev_provenance': ev_provenance,
                         'ev_confidence': ev_confidence,
                         'ev_confidence_val': ev_confidence_val,
                         'ev_prediction_provenance': ev_prediction_provenance,
-                        'ev_modality': ev_modality, 'ev_temporal': ev_temporal,
-                        'ev_TA2handle': ev_TA2handle,
+                        'ev_modality': ev_modality,
+                        'ev_outlinks': ev_outlinks,
+                        'ev_duration': ev_duration,
+                        'ev_earliestStartTime': ev_earliestStartTime,
+                        'ev_latestStartTime': ev_latestStartTime,
+                        'ev_earliestEndTime': ev_earliestEndTime,
+                        'ev_latestEndTime': ev_latestEndTime,
+                        'ev_absoluteTime': ev_absoluteTime
                     }
                     ta2_ceinstance.ev_df = pd.concat([ta2_ceinstance.ev_df,
                                                       pd.DataFrame([ev_row])],
@@ -695,6 +734,11 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
 
     # Since the object is updated, nothing is returned
     return
+
+
+"""
+change/add field names
+"""
 
 
 def extract_ta2_elements_from_json_instance(ta2_team_name: str,

@@ -6,13 +6,17 @@ import sys
 import pandas as pd
 import argparse
 
-from kevs.TA1Library import TA1Collection
+# from kevs.TA1Library import TA1Collection
 from kevs.TA2Instantiation import TA2Collection
 from kevs.Annotation import Annotation
 from kevs.Assessment import Assessment
 from kevs.compare_graph_g_versions import get_graph_g_comparison
 from kevs.compare_assment_versions import get_assessment_comparison
-from kevs.validate_ta1_references_by_ta2 import validate_ta1_references_by_ta2
+# from kevs.validate_ta1_references_by_ta2 import validate_ta1_references_by_ta2
+
+"""
+update in progress (last edtied: Feb.09.2023.)
+"""
 
 
 def generate_analysis(config_filepath: str, config_mode: str, score_tasks: str) -> None:
@@ -40,14 +44,14 @@ def generate_analysis(config_filepath: str, config_mode: str, score_tasks: str) 
                                   config[config_mode]["assessment_subdir"])
 
     # subfolders of root_directory/output_subdir/eval_phase_subdir
-    ta1_score_dir = os.path.join(output_dir_prefix,
-                                 config[config_mode]["ta1_score_subdir"])
+    # ta1_score_dir = os.path.join(output_dir_prefix,
+    #                              config[config_mode]["ta1_score_subdir"])
     ta2_task1_score_dir = os.path.join(output_dir_prefix,
                                        config[config_mode]["ta2_task1_score_subdir"])
     ta2_task2_score_dir = os.path.join(output_dir_prefix,
                                        config[config_mode]["ta2_task2_score_subdir"])
-    ta1_analysis_dir = os.path.join(output_dir_prefix,
-                                    config[config_mode]["ta1_analysis_subdir"])
+    # ta1_analysis_dir = os.path.join(output_dir_prefix,
+    #                                 config[config_mode]["ta1_analysis_subdir"])
     ta2_task1_analysis_dir = os.path.join(output_dir_prefix,
                                           config[config_mode]["ta2_task1_analysis_subdir"])
     ta2_task2_analysis_dir = os.path.join(output_dir_prefix,
@@ -56,13 +60,14 @@ def generate_analysis(config_filepath: str, config_mode: str, score_tasks: str) 
                                           config[config_mode]["graph_g_extraction_subdir"])
 
     # if TA1 or TA2 extraction directories do not exist, throw error message
-    if not os.path.isdir(ta1_score_dir) or not os.path.isdir(ta2_task1_score_dir) \
-            or not os.path.isdir(ta2_task2_score_dir):
-        sys.exit('Directory not found: ' + ta1_score_dir + ' or ' + ta2_task1_score_dir +
-                 ' or ' + ta2_task2_score_dir)
+    # if not os.path.isdir(ta1_score_dir):
+    #     sys.exit('Directory not found: ' + ta1_score_dir)
+    if not os.path.isdir(ta2_task1_score_dir) or not os.path.isdir(ta2_task2_score_dir):
+        sys.exit('Directory not found: ' + ta2_task1_score_dir + ' or '
+                 + ta2_task2_score_dir)
     # if TA1 analysis directories do not exist, create them
-    if not os.path.isdir(ta1_analysis_dir):
-        os.makedirs(ta1_analysis_dir)
+    # if not os.path.isdir(ta1_analysis_dir):
+    #     os.makedirs(ta1_analysis_dir)
     # if TA2 Task1 analysis directories do not exist, create them
     if not os.path.isdir(ta2_task1_analysis_dir):
         os.makedirs(ta2_task1_analysis_dir)
@@ -71,21 +76,21 @@ def generate_analysis(config_filepath: str, config_mode: str, score_tasks: str) 
         os.makedirs(ta2_task2_analysis_dir)
 
     # TA1
-    ta1_collection = TA1Collection()
-    print("Importing TA1 Collection")
-    ta1_collection.import_extractions_from_file_collection(ta1_score_dir)
-    if score_tasks == "all" or score_tasks == "ta1":
-        print("Producing TA1 Event Trees")
-        ta1_collection.produce_event_trees(ta1_score_dir)
+    # ta1_collection = TA1Collection()
+    # print("Importing TA1 Collection")
+    # ta1_collection.import_extractions_from_file_collection(ta1_score_dir)
+    # if score_tasks == "all" or score_tasks == "ta1":
+    #     print("Producing TA1 Event Trees")
+    #     ta1_collection.produce_event_trees(ta1_score_dir)
 
     # TA2 Task 1
     ta2_task1_collection = TA2Collection(is_task2=False)
     print("Importing TA2 Task 1 Collection")
     ta2_task1_collection.import_extractions_from_file_collection(ta2_task1_score_dir)
     if score_tasks == "all" or score_tasks == "ta2task1":
-        print("Validating TA1 References")
-        validate_ta1_references_by_ta2(ta2_task1_analysis_dir, ta1_collection,
-                                       ta2_task1_collection)
+        # print("Validating TA1 References")
+        # validate_ta1_references_by_ta2(ta2_task1_analysis_dir, ta1_collection,
+        #                                ta2_task1_collection)
         print("Producing TA2 Task 1 Event Trees")
         ta2_task1_collection.produce_event_trees(ta2_task1_score_dir, include_all_events)
 
@@ -94,9 +99,9 @@ def generate_analysis(config_filepath: str, config_mode: str, score_tasks: str) 
     print("Importing TA2 Task 2 Collection")
     ta2_task2_collection.import_extractions_from_file_collection(ta2_task2_score_dir)
     if score_tasks == "all" or score_tasks == "ta2task2":
-        print("Validating TA1 References")
-        validate_ta1_references_by_ta2(ta2_task2_analysis_dir, ta1_collection,
-                                       ta2_task2_collection)
+        # print("Validating TA1 References")
+        # validate_ta1_references_by_ta2(ta2_task2_analysis_dir, ta1_collection,
+        #                                ta2_task2_collection)
         print("Producing TA2 Task 2 Event Trees")
         ta2_task2_collection.produce_event_trees(ta2_task2_score_dir, include_all_events)
 

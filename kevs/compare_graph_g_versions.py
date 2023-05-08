@@ -11,6 +11,10 @@ import copy
 from kevs.produce_event_trees import get_ta2_predicted_events, \
     is_event_ins_or_pred
 
+"""
+update in progress (last edtied: Feb.09.2023.)
+"""
+
 
 def format_graphg_worksheet(ws):
     # highlight in yellow predicted rows
@@ -74,9 +78,9 @@ def produce_compare_event_str(ev_id: str, ta2_ce_instance, graphg_ceinstance) ->
             ev_pred_str = "*predicted* "
         ev_conf_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_confidence_val'].iloc[0]
         ev_tree_name_root = "{}{} ({})".format(ev_pred_str, ev_name_root, ev_g_root)
-        qlabel_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_ta2qlabel'].iloc[0]
+        qlabel_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_ta2wd_label'].iloc[0]
         if pd.isna(qlabel_str) or qlabel_str == "":
-            qlabel_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_qlabel'].iloc[0]
+            qlabel_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_wd_label'].iloc[0]
         desc_str = dforig.loc[dforig['ev_id'] == ev_id, 'ev_description'].iloc[0]
         ev_tree_name = "{}: description: {}, conf: {}".format(ev_tree_name_root,
                                                               desc_str, ev_conf_str)
@@ -93,9 +97,9 @@ def get_single_arg_string(arg_row):
         arg_g_root = arg_row['arg_ta2provenance']
     if pd.isna(arg_g_root):
         arg_g_root = ""
-    qlabel_str = arg_row['ent_TA2qlabel']
+    qlabel_str = arg_row['ent_ta2wd_label']
     if pd.isna(qlabel_str) or qlabel_str == "":
-        qlabel_str = arg_row['ent_qlabel']
+        qlabel_str = arg_row['ent_wd_label']
     arg_str = "{} ({})".format(arg_name, arg_g_root)
     return arg_str
 
@@ -140,9 +144,9 @@ def produce_compare_arg_str(ev_id: str, ta2_ce_instance, graphg_ceinstance) -> s
 
         arg_rows = dforigarg.loc[dforigarg['ev_id'] == ev_id, :]
         arg_rows = pd.merge(arg_rows,
-                            ta2_ce_instance.ent_df.loc[:, ['ent_id', 'ent_name', 'ent_qnode',
-                                                           'ent_qlabel', 'ent_TA2qnode',
-                                                           'ent_TA2qlabel']], how="left",
+                            ta2_ce_instance.ent_df.loc[:, ['ent_id', 'ent_name', 'ent_wd_node',
+                                                           'ent_wd_label', 'ent_ta2wd_node',
+                                                           'ent_ta2wd_label']], how="left",
                             left_on="arg_ta2entity", right_on="ent_id")
         arg_rows = arg_rows.loc[pd.notna(arg_rows["arg_ta2entity"]) &
                                 (arg_rows["arg_ta2entity"] != "kairos:NULL"), :]
@@ -176,9 +180,7 @@ def get_graph_g_comparison(output_dir, annotation_collection, ta2_collection,
     ta2_team_list = ta2_collection.ta2dict.keys()
     ce_list = ['ce2013', 'ce2020', 'ce2024', 'ce2075', 'ce2079', 'ce2094',
                'ce2101', 'ce2102', 'ce2103', 'ce2104']
-    # ce_list = ['ce2002']
     ta1_team_list = ['CMU', 'IBM', 'ISI', 'RESIN', 'SBU']
-    # ta1_team_list = ['NISTTESTA']
     for ce in ce_list:
         abridgedce = ce + 'abridged'
         # Merge data frames for TA2 systems into one spreadsheet and write out
@@ -191,7 +193,7 @@ def get_graph_g_comparison(output_dir, annotation_collection, ta2_collection,
                           errors="raise", inplace=True)
 
         # Get Graph G instances and annotation
-        abridged_graphg_key = "GRAPHG|GRAPHG|{}|nist:Instances/00001/nistQuizlet9GraphG". \
+        abridged_graphg_key = "GRAPHG|GRAPHG|{}|nist:Instances/00001/nistPhase2bGraphG". \
             format(abridgedce)
         abridged_graphg_ceinstance = graph_g_collection.ta2dict['GRAPHG'].ta2dict[
             abridged_graphg_key]
