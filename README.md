@@ -14,7 +14,7 @@ KAIROS TA1 and TA2 Systems.
 
 The software has been updated for SDF 2.3 (beta).
 
-This is the preliminary scorer and graph G converter. 
+This is the preliminary scorer and graph G converter for Phase 2b. 
 
 The software will be updated after we receive the finalized assessment format.
 
@@ -28,7 +28,7 @@ python script_01_generate_graph_g.py -f config.ini -m "Default"
 
 ## Tags
 
-You can access the different version of softwares in the tags tab.
+You can access the previous version of softwares in the tags tab.
 
 Currently available:
 * phase_2a: Software for Phase 2a full evaluation
