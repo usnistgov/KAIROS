@@ -13,26 +13,27 @@ import urllib.request
 
 
 def get_wd_description(qnode_name: str, qnode_df_fp: str) -> str:
-    qnode_df = pd.read_csv(qnode_df_fp)
+    qnode_df = pd.read_csv(qnode_df_fp, encoding="utf-8")
     if 'description' not in qnode_df.columns:
         qnode_df['description'] = 'no description'
 
     description_list = qnode_df.loc[qnode_df['qnode'] == qnode_name, 'description'].tolist()
     if description_list[0] != 'no description':
         wd_description = str(description_list[0])
+        wd_description = wd_description.replace("\\", "\'")
     else:
         api_url = "https://kgtk.isi.edu/api?q={}&language=en&extra_info=true".format(qnode_name)
         with urllib.request.urlopen(api_url) as url:
-            qnode_data = json.loads(url.read().decode())
+            qnode_data = json.loads(url.read().decode('utf-8'))
         if len(qnode_data[0]['description']) > 0:
             wd_description = qnode_data[0]['description'][0]
         else:
-            wd_description = ''
+            wd_description = 'no description'
 
         qnode_df.loc[qnode_df['qnode'] == qnode_name, 'description'] = wd_description
-        qnode_df.to_csv(qnode_df_fp, index=False, header=True)
+        qnode_df.to_csv(qnode_df_fp, encoding="utf-8", index=False, header=True)
 
-    return wd_description
+    return wd_description if wd_description != 'no description' else ''
 
 
 def get_wdnode_label(qnode_name: str, qnode_df_fp: str) -> str:
@@ -46,17 +47,18 @@ def get_wdnode_label(qnode_name: str, qnode_df_fp: str) -> str:
     Returns:
 
     """
-    qnode_df = pd.read_csv(qnode_df_fp)
+    qnode_df = pd.read_csv(qnode_df_fp, encoding="utf-8")
     wd_label = ""
     write_wikidata = False
     wd_label_list = qnode_df.loc[qnode_df['qnode'] == qnode_name, 'qlabel'].tolist()
     if len(wd_label_list) >= 1:
         wd_label = str(wd_label_list[0])
+        wd_label = wd_label.replace("\\", "\'")
     else:
         # Find in api
         api_url = "https://kgtk.isi.edu/api?q={}&language=en&extra_info=true".format(qnode_name)
         with urllib.request.urlopen(api_url) as url:
-            qnode_data = json.loads(url.read().decode())
+            qnode_data = json.loads(url.read().decode('utf-8'))
         wd_label = qnode_data[0]['label'][0]
         if wd_label != '':
             qnode_df = pd.concat([qnode_df,
@@ -65,7 +67,7 @@ def get_wdnode_label(qnode_name: str, qnode_df_fp: str) -> str:
             write_wikidata = True
 
     if write_wikidata:
-        qnode_df.to_csv(qnode_df_fp, index=False, header=True)
+        qnode_df.to_csv(qnode_df_fp, encoding="utf-8", index=False, header=True)
     return wd_label
 
 
@@ -75,8 +77,16 @@ def add_temporal_info(ep_dict: dict, start_datetime_type: str, start_datetime: s
     # Handle common unknown cases
     start_early_datetime = start_datetime.replace("Txx:xx:xx", "T00:00:00")
     start_late_datetime = start_datetime.replace("Txx:xx:xx", "T23:59:59")
-    end_early_datetime = end_datetime.replace("Txx:xx:xx", "T00:00:00")
+    start_early_datetime = start_early_datetime.replace("-xx-", "-01-")
+    start_late_datetime = start_late_datetime.replace("-xx-", "-01-")
+    start_early_datetime = start_early_datetime.replace("-xxT", "-01T")
+    start_late_datetime = start_late_datetime.replace("-xxT", "-01T")
+    end_early_datetime = end_datetime.replace("Txx:xx:xx", "T23:59:59")
     end_late_datetime = end_datetime.replace("Txx:xx:xx", "T23:59:59")
+    end_early_datetime = end_early_datetime.replace("-xx-", "-12-")
+    end_late_datetime = end_late_datetime.replace("-xx-", "-12-")
+    end_early_datetime = end_early_datetime.replace("-xxT", "-30T")
+    end_late_datetime = end_late_datetime.replace("-xxT", "-30T")
 
     # add start datetime
     if start_datetime_type == 'starton':
@@ -138,7 +148,7 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
         arg_sdf_id = arg_row.get('sdf_id')
         entity_id = arg_row.get('entity_id')
         entity_sdf_id = ""
-        if entity_id != "EMPTY_NA":
+        if entity_id != "EMPTY_NA" and entity_id != "entity_id":
             entity_sdf_id = entity_qnode_df.loc[entity_qnode_df['entity_id'] == entity_id,
                                                 'sdf_id'].tolist()[0]
         entity_id = entity_id
@@ -147,7 +157,7 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
         value_sdf_id = arg_row.get('value_sdf_id')
 
         # Replace Entity ID with pointer to event
-        if entity_id == "EMPTY_NA":
+        if entity_id == "EMPTY_NA" or entity_id == "entity_id":
             entity_id = val_id
             # We might have a relation as an argument
             if "RR" in val_id:
@@ -182,7 +192,7 @@ def add_arguments(schema_dict: dict, ep_id: str, ep_sdf_id: str, ep_dict: dict, 
 
         val_dict = {'@id': value_sdf_id,
                     'ta2entity': entity_sdf_id,
-                    'provenance': value_sdf_id}
+                    'provenance': val_id}
 
         # if argument is an event
         if val_id[:2] == 'VP':
@@ -351,7 +361,7 @@ def add_ep(schema_dict: dict, ep_row: pd.Series, ep_id_set: set,
             ep_dict = {'@id': ep_sdf_id, 'name': wd_label, 'description': ep_name,
                        'ta2wd_node': qnode_name, 'ta2wd_label': wd_label,
                        'ta2wd_description': wd_description,
-                       'ta1ref': 'none', "ta1explanation": "From Graph G.",
+                       'ta1ref': 'none',
                        'parent': schema_dict['events'][0]['@id'],
                        'provenance': ep_id,
                        'temporal': {},
@@ -527,7 +537,7 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     er_df['unique_str'] = er_df['unique_num'].apply(lambda x: str(x).zfill(5))
     er_df['sdf_id'] = 'nist:Relations/' + er_df['unique_str'] + \
         '/' + er_df['relation_id']
-    curr_sel_num = max(er_df['unique_num']) + er_df.shape[0]
+    curr_sel_num = max(er_df['unique_num'], default=0) + er_df.shape[0]  # for 0 relation
 
     er_df['selected'] = "no"
     if er_sel_df.shape[0] > 0:
@@ -540,7 +550,7 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     # initiate sdf format
     sdf_dict = {'@context': [], '@id': 'nist:Submissions/Phase2b/GraphG/' + complex_event,
                 'sdfVersion': '2.3',
-                'version': 'nist:Phase2bGraphG:vDryRun1',
+                'version': 'nist:Phase2bGraphG:vPhase2bEval',
                 'ta2': True, 'task2': True, 'ceID': complex_event, 'instances': []}
 
     sdf_dict['@context'].append('https://kairos-sdf.s3.amazonaws.com/context/kairos-v2.3.jsonld')
@@ -561,23 +571,17 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
     root_ep_name = 'nist:GraphG/' + complex_event + '/root'
     root_ep_description = 'Root Event for Graph G Complex Event for ' + complex_event
 
-    if 'ce20' in complex_event:
-        root_ta2wd_node = 'Q3241045'
-    elif 'ce2101' in complex_event:
-        root_ta2wd_node = 'Q124757'
-    elif 'ce2102' in complex_event:
-        root_ta2wd_node = 'Q1460420'
-    elif 'ce2103' in complex_event:
-        root_ta2wd_node = 'Q891854'
-    elif 'ce2104' in complex_event:
-        root_ta2wd_node = 'Q467011'
-    root_ta2wd_label = get_wdnode_label(root_ta2wd_node, qnode_df_fp)
-    root_ta2wd_description = get_wd_description(root_ta2wd_node, qnode_df_fp)
+    # if 'ce22' in complex_event:
+    #     root_ta2wd_node = ''
+    # root_ta2wd_label = get_wdnode_label(root_ta2wd_node, qnode_df_fp)
+    # root_ta2wd_description = get_wd_description(root_ta2wd_node, qnode_df_fp)
+    # root_ta2wd_label = 'root node'
+    # root_ta2wd_description = 'root node'
     root_ep_dict = {'@id': root_ep_id, 'name': root_ep_name, 'description': root_ep_description,
                     'ta1ref': 'none',
-                    'provenance': root_ep_id,
-                    'ta2wd_node': 'wd:' + root_ta2wd_node, 'ta2wd_label': root_ta2wd_label,
-                    'ta2wd_description': root_ta2wd_description,
+                    'provenance': complex_event + '-root',
+                    #  'ta2wd_node': 'wd:', 'ta2wd_label': root_ta2wd_label, # 'wd:' +
+                    #  'ta2wd_description': root_ta2wd_description,
                     'parent': 'kairos:NULL',
                     'isTopLevel': 'true',
                     'children_gate': "and",
@@ -618,11 +622,11 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
             arg_pair_df = arg_df.loc[arg_df['relation_id'] == er_id]
             # get subject and object index in the arg_pair_df
             sub_index = obj_index = -1
-            arg_num_0 = arg_pair_df.iloc[0].get('arg_num')
-            if arg_num_0 == 'arg1':
+            arg_num_0 = arg_pair_df.iloc[0].get('slot_type')
+            if arg_num_0 == 'A0':
                 sub_index = 0
                 obj_index = 1
-            elif arg_num_0 == 'arg2':
+            elif arg_num_0 == 'A1':
                 sub_index = 1
                 obj_index = 0
             er_subject_arg_id = arg_pair_df.iloc[sub_index].get('arg_id')
@@ -740,7 +744,7 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                        'wd_description': wd_description,
                        'relationObject': er_object_ent_sdf_id,
                        'relationObject_prov': er_object_arg_id,
-                       'relationProvenance': er_sdf_id,
+                       'relationProvenance': er_id,
                        'ta1ref': 'none'}
             if er_modality != "none" and er_modality != "generic":
                 # Check for a split and add if a list
@@ -801,7 +805,7 @@ def generate_single_graphG(complex_event: str, output_graph_g_directory: str,
                                   'graphg-graphg-task2-' + complex_event + '.json')
 
     with open(json_file_name, 'w') as outfile:
-        json.dump(sdf_dict, outfile, indent=4)
+        json.dump(sdf_dict, outfile, indent=4, ensure_ascii=False)
 
     orig_events = ep_sel_df['eventprimitive_id']
     new_events = [ev['@id'].split('/')[2] for ev in schema_dict['events']]

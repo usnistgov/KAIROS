@@ -13,6 +13,7 @@ class CEAnnotation:
         self.entity_qnode_df = pd.DataFrame()
         self.ep_sel_df = pd.DataFrame()
         self.er_sel_df = pd.DataFrame()
+        self.profile_df = pd.DataFrame()
         self.ep_partition_df = pd.DataFrame()
 
     def import_annotation(self, ce_annotation_dir):
@@ -36,8 +37,30 @@ class CEAnnotation:
                                          self.complex_event + '_temporal.xlsx')
         self.entity_qnode_df = pd.read_excel(ce_annotation_dir + '/' +
                                              self.complex_event + '_kb_linking.xlsx')
-        self.ep_partition_df = pd.read_excel(ce_annotation_dir + '/' +
-                                             self.complex_event + '_partition.xlsx')
+        self.profile_df = pd.read_csv(ce_annotation_dir + '/' +
+                                      'p2b_eval_document_profile.tab', delimiter='\t')
+
+        exposed_docs_list = self.profile_df.loc[(self.profile_df['ce_id'] == self.complex_event) &
+                                                (self.profile_df['partition'] == 'exposed'),
+                                                'root_uid'].tolist()
+
+        rows = []
+        for _, row in self.ep_sel_df.iterrows():
+            uids = row['root_uid']
+            uid_list = str.split(uids, sep=',')
+            exposed_flag = 0
+            for uid in uid_list:
+                if uid in exposed_docs_list:
+                    exposed_flag = 1
+            if exposed_flag == 1:
+                row['partition'] = 'exposed'
+            else:
+                row['partition'] = 'hidden'
+            rows.append(row)
+
+        self.ep_partition_df = pd.DataFrame(rows)
+        self.ep_partition_df = self.ep_partition_df[['eventprimitive_id', 'partition']]
+
         self.er_sel_df = pd.DataFrame()
         if os.path.exists(ce_annotation_dir + '/' +
                           self.complex_event + '_relations_selected.xlsx'):

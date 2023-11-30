@@ -48,7 +48,8 @@ def compute_submission_stats(config_filepath: str, config_mode: str, score_tasks
     else:
         pass
 
-    if score_tasks == "all" or score_tasks == "ta1":
+    # only run in 'ta1' since we don't need to compute TA1 stats in Phase2b
+    if score_tasks == "ta1":
         if not os.path.isdir(ta1_score_dir):
             sys.exit('Directory not found: ' + ta1_score_dir)
         # compute ta1 submission stats

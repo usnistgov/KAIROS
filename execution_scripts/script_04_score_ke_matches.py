@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 import argparse
 
-from kevs.TA1Library import TA1Collection
+# from kevs.TA1Library import TA1Collection
 from kevs.TA2Instantiation import TA2Collection
 from kevs.Annotation import Annotation
 from kevs.match_ke import match_ke_elements
@@ -36,8 +36,8 @@ def score_ke_matches(config_filepath: str, config_mode: str, score_tasks: str) -
     # subfolders of root_directory/output_subdir/eval_phase_subdir
     # use ta1 for later: ta1_score_dir = os.path.join(output_dir_prefix,
     #                             config[config_mode]["ta1_score_subdir"])
-    ta1_score_dir = os.path.join(output_dir_prefix,
-                                 config[config_mode]["ta1_score_subdir"])
+    # ta1_score_dir = os.path.join(output_dir_prefix,
+    #                              config[config_mode]["ta1_score_subdir"])
     ta2_task1_score_dir = os.path.join(output_dir_prefix,
                                        config[config_mode]["ta2_task1_score_subdir"])
     ta2_task2_score_dir = os.path.join(output_dir_prefix,
@@ -135,21 +135,22 @@ def score_ke_matches(config_filepath: str, config_mode: str, score_tasks: str) -
         else:
             print("No Graph G Submissions to Score")
 
-    print("Importing TA1 Libraries")
-    ta1_collection = TA1Collection()
-    if score_tasks == "all" or score_tasks == "ta1":
-        ta1_collection.import_extractions_from_file_collection(ta1_score_dir)
+    # Not used in Phase2b. Update later if needed.
+    # print("Importing TA1 Libraries")
+    # ta1_collection = TA1Collection()
+    # if score_tasks == "all" or score_tasks == "ta1":
+    #     ta1_collection.import_extractions_from_file_collection(ta1_score_dir)
 
-    if score_tasks == "all" or score_tasks == "ta1":
-        print("Automatically Scoring Ta1")
-        if ta1_collection.ta1dict:
-            #    match_ta1_ke_elements(ta1_as_path, task1_annotation_collection, ta1_collection,
-            #                          graph_g_collection, qnode_dir,
-            #                          qnode_sim_fp, is_task2=True, use_graph_g=False,
-            #                          min_confidence_threshold=0)
-            pass
-        else:
-            print("No TA1 Submissions to Score")
+    # if score_tasks == "all" or score_tasks == "ta1":
+    #     print("Automatically Scoring Ta1")
+    #     if ta1_collection.ta1dict:
+    #         #    match_ta1_ke_elements(ta1_as_path, task1_annotation_collection, ta1_collection,
+    #         #                          graph_g_collection, qnode_dir,
+    #         #                          qnode_sim_fp, is_task2=True, use_graph_g=False,
+    #         #                          min_confidence_threshold=0)
+    #         pass
+    #     else:
+    #         print("No TA1 Submissions to Score")
 
 
 def define_parser():

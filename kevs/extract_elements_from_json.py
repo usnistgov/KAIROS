@@ -657,7 +657,10 @@ def get_ta2_events(ta2_ceinstance, schema: json, schema_id: str,
                 if 'repeatable' in event.keys():
                     ev_repeatable = event['repeatable']
                 if 'provenance' in event.keys():
-                    ev_provenance = event['provenance']
+                    if ta2_ceinstance.ta2_team_name == "RESIN":
+                        ev_provenance = event['provenance'][0]
+                    else:
+                        ev_provenance = event['provenance']
                 if 'predictionProvenance' in event.keys():
                     ev_prediction_provenance = event['predictionProvenance']
                 if 'confidence' in event.keys():

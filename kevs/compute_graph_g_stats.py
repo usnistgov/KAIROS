@@ -14,6 +14,18 @@ def score_graph_g_stats(graph_g_stats_dir, output_dir) -> None:
                                              'ta2_team', 'recall_graphg_ev'])
     abridged_graphg_scores_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
                                              'ta2_team', 'recall_graphg_ev'])
+    full_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                 'ta2_team', 'recall_graphg_ev'])
+    spill_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                  'ta2_team', 'recall_graphg_ev'])
+    riots_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                  'ta2_team', 'recall_graphg_ev'])
+    disease_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                    'ta2_team', 'recall_graphg_ev'])
+    bomb_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                 'ta2_team', 'recall_graphg_ev'])
+    coup_graphg_score_df = pd.DataFrame(columns=['ce', 'schema_instance_id', 'ta1_team',
+                                                 'ta2_team', 'recall_graphg_ev'])
     for ce in os.listdir(graph_g_stats_dir):
         if ce != ".DS_Store":
             filename = os.path.join(graph_g_stats_dir, ce)
@@ -29,6 +41,25 @@ def score_graph_g_stats(graph_g_stats_dir, output_dir) -> None:
         if ("abridged" in ce) and (("g2" or "g3") not in ce):
             abridged_graphg_scores_df = pd.concat([abridged_graphg_scores_df,
                                                    graphg_scores_temp_df])
+            if ("2201" in ce) or ("2202" in ce) or ("2203" in ce):
+                spill_graphg_score_df = pd.concat([spill_graphg_score_df,
+                                                  graphg_scores_temp_df])
+            elif ("2204" in ce) or ("2205" in ce) or ("2206" in ce):
+                riots_graphg_score_df = pd.concat([riots_graphg_score_df,
+                                                  graphg_scores_temp_df])
+            elif ("2207" in ce) or ("2208" in ce) or ("2209" in ce):
+                disease_graphg_score_df = pd.concat([disease_graphg_score_df,
+                                                     graphg_scores_temp_df])
+            elif ("2210" in ce) or ("2211" in ce) or ("2212" in ce):
+                bomb_graphg_score_df = pd.concat([bomb_graphg_score_df,
+                                                  graphg_scores_temp_df])
+            else:
+                coup_graphg_score_df = pd.concat([coup_graphg_score_df,
+                                                  graphg_scores_temp_df])
+
+        if ("abridged" not in ce):
+            full_graphg_score_df = pd.concat([full_graphg_score_df,
+                                              graphg_scores_temp_df])
 
     graphg_scores_result_df = graphg_scores_df.groupby(['ta1_team', 'ta2_team']).agg(
         {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
@@ -36,7 +67,18 @@ def score_graph_g_stats(graph_g_stats_dir, output_dir) -> None:
                                        'recall_max', 'recall_std']
     graphg_scores_result_df = graphg_scores_result_df.reset_index()
     graphg_scores_result_df.to_csv(os.path.join(output_dir,
-                                                "graphg_scores_all.csv"), index=False)
+                                                "graphg_scores_all.csv"),
+                                   index=False)
+
+    full_graphg_scores_result_df = \
+        full_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    full_graphg_scores_result_df.columns = ['recall_average', 'recall_min',
+                                            'recall_max', 'recall_std']
+    full_graphg_scores_result_df = full_graphg_scores_result_df.reset_index()
+    full_graphg_scores_result_df.to_csv(os.path.join(output_dir,
+                                                     "graphg_scores_full.csv"),
+                                        index=False)
 
     abridged_graphg_scores_result_df = \
         abridged_graphg_scores_df.groupby(['ta1_team', 'ta2_team']).agg(
@@ -45,7 +87,57 @@ def score_graph_g_stats(graph_g_stats_dir, output_dir) -> None:
                                                 'recall_max', 'recall_std']
     abridged_graphg_scores_result_df = abridged_graphg_scores_result_df.reset_index()
     abridged_graphg_scores_result_df.to_csv(os.path.join(output_dir,
-                                                         "graphg_scores_abridged.csv"), index=False)
+                                                         "graphg_scores_abridged.csv"),
+                                            index=False)
+    spill_graphg_score_result_df = \
+        spill_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    spill_graphg_score_result_df.columns = ['recall_average', 'recall_min',
+                                            'recall_max', 'recall_std']
+    spill_graphg_score_result_df = spill_graphg_score_result_df.reset_index()
+    spill_graphg_score_result_df.to_csv(os.path.join(output_dir,
+                                                     "graphg_scores_abridged_spill.csv"),
+                                        index=False)
+
+    riots_graphg_score_result_df = \
+        riots_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    riots_graphg_score_result_df.columns = ['recall_average', 'recall_min',
+                                            'recall_max', 'recall_std']
+    riots_graphg_score_result_df = riots_graphg_score_result_df.reset_index()
+    riots_graphg_score_result_df.to_csv(os.path.join(output_dir,
+                                                     "graphg_scores_abridged_riot.csv"),
+                                        index=False)
+
+    disease_graphg_score_result_df = \
+        disease_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    disease_graphg_score_result_df.columns = ['recall_average', 'recall_min',
+                                              'recall_max', 'recall_std']
+    disease_graphg_score_result_df = disease_graphg_score_result_df.reset_index()
+    disease_graphg_score_result_df.to_csv(os.path.join(output_dir,
+                                                       "graphg_scores_abridged_disease.csv"),
+                                          index=False)
+
+    bomb_graphg_score_result_df = \
+        bomb_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    bomb_graphg_score_result_df.columns = ['recall_average', 'recall_min',
+                                           'recall_max', 'recall_std']
+    bomb_graphg_score_result_df = bomb_graphg_score_result_df.reset_index()
+    bomb_graphg_score_result_df.to_csv(os.path.join(output_dir,
+                                                    "graphg_scores_abridged_bomb.csv"),
+                                       index=False)
+
+    coup_graphg_score_result_df = \
+        coup_graphg_score_df.groupby(['ta1_team', 'ta2_team']).agg(
+            {'recall_graphg_ev': ['mean', 'min', 'max', 'std']})
+    coup_graphg_score_result_df.columns = ['recall_average', 'recall_min',
+                                           'recall_max', 'recall_std']
+    coup_graphg_score_result_df = coup_graphg_score_result_df.reset_index()
+    coup_graphg_score_result_df.to_csv(os.path.join(output_dir,
+                                                    "graphg_scores_abridged_coup.csv"),
+                                       index=False)
 
 
 def compute_graph_g_stats(output_dir, ta2_collection,

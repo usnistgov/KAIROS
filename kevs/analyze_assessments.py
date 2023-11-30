@@ -6,6 +6,253 @@ import os
 from kevs.produce_event_trees import get_ta2_instantiated_events, get_ta2_predicted_events
 
 
+def compute_kappa_scores(score: str, output_dir: str, df_dict: dict, columns_list: list):
+    kappa_list = []
+    for g_name, g_df in df_dict.items():
+        n_raters = len(columns_list)
+        n_items = len(g_df)
+        # Create a matrix where each row represents an item and each column represents a rater
+        ratings_matrix = g_df[columns_list].to_numpy()
+        # Calculate the observed agreement
+        observed_agreement = (1 / (n_items * (n_raters - 1))) * \
+            np.sum((ratings_matrix ** 2).sum(axis=1) - n_raters)
+        # Calculate the expected agreement
+        expected_agreement = (1 / (n_items * (n_raters * (n_raters - 1)))) * \
+            np.sum(np.sum(ratings_matrix, axis=0) ** 2 - n_items * n_raters)
+        # Calculate Fleiss' Kappa
+        kappa = (observed_agreement - expected_agreement) / (1 - expected_agreement)
+
+        g_name_str = str(g_name)
+        re_g_name = re.sub(r"\('([^']+)'\s*,\s*'([^']+)'\)", r"\1-\2", g_name_str)
+        kappa_list.append((re_g_name, kappa))
+
+    res_df = pd.DataFrame(kappa_list, columns=['TA1-TA2', 'Kappa Score'])
+    res_df.to_csv(os.path.join(output_dir, "Aggregated_Scores",
+                               f"Kappa_scores_{score}.csv"), index=False)
+
+
+def produce_aggregated_scores(output_dir: str):
+    print("Aggregate assessment scores")
+    ta2_ce_df = pd.read_csv(os.path.join(output_dir, "TA2_Assessed_CE_stats.csv"))
+    ta2_ce_df = ta2_ce_df.loc[ta2_ce_df['assessment'] == 'yes', :]
+    ta2_ce_df['instance_status_pass'] = 0
+    ta2_ce_df['schema_name_relevance'] = ta2_ce_df['schema_name_relevance'].astype(int)
+    ta2_ce_df.loc[ta2_ce_df['instance_status'] == 'yes', 'instance_status_pass'] = 1
+    ta2_ce_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+
+    ta2_ev_df = pd.read_csv(os.path.join(output_dir,
+                                         "TA2_Assessed_Event_stats_assessed_only.csv"))
+    ta2_ev_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+    ta2_arg_df = pd.read_csv(os.path.join(output_dir,
+                                          "TA2_Assessed_Arguments_stats_assessed_only.csv"))
+    ta2_arg_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+    # need to copy TA2_stats.xlsx in the 'output_dir' to simply compute some aggregated score
+    ta2_stats_df = pd.read_excel(os.path.join(output_dir,
+                                              "TA2_stats.xlsx"))
+    ta2_stats_df = ta2_stats_df.loc[ta2_stats_df['schema_instance_id'].str.contains('abridged'), :]
+    ta2_pred_df = pd.read_csv(os.path.join(output_dir,
+                                           "TA2_Assessed_Prediction_stats_assessed_only.csv"))
+    ta2_pred_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+
+    aggregated_output_dir = os.path.join(output_dir, "Aggregated_Scores")
+    if not os.path.isdir(aggregated_output_dir):
+        os.mkdir(aggregated_output_dir)
+
+    # compute CE stats
+    ta2_ce_df['ce_type'] = 'coup'
+    ta2_ce_df.loc[ta2_ce_df['ce'].isin(['ce2201_abridged', 'ce2202_abridged', 'ce2203_abridged']),
+                  'ce_type'] = 'chemical'
+    ta2_ce_df.loc[ta2_ce_df['ce'].isin(['ce2204_abridged', 'ce2205_abridged', 'ce2206_abridged']),
+                  'ce_type'] = 'riot'
+    ta2_ce_df.loc[ta2_ce_df['ce'].isin(['ce2207_abridged', 'ce2208_abridged', 'ce2209_abridged']),
+                  'ce_type'] = 'disease'
+    ta2_ce_df.loc[ta2_ce_df['ce'].isin(['ce2210_abridged', 'ce2211_abridged', 'ce2212_abridged']),
+                  'ce_type'] = 'bombing'
+
+    agg_ce_df = ta2_ce_df.groupby(['ta1_team', 'ta2_team']).agg(
+        instance_pass=('instance_status_pass', 'mean'),
+        schema_name=('schema_name_relevance', 'mean'),
+        schema_name_min=('schema_name_relevance', 'min'),
+        schema_name_max=('schema_name_relevance', 'max'),
+    ).reset_index()
+
+    agg_ce_split_df = ta2_ce_df.groupby(['ta1_team', 'ta2_team', 'ce_type']).agg({
+        'instance_status_pass': ['mean'],
+        'schema_name_relevance': ['mean', 'min', 'max']}).reset_index()
+
+    # hierarchy stats
+    hier_ce_df = ta2_ce_df.loc[ta2_ce_df['instance_status'] == 'yes', :].copy()
+    # handle 'EMPTY_NA' issues
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q1_depth_breadth_1'] == 'EMPTY_NA',
+                   'hierarchy_Q1_depth_breadth_1'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q1_depth_breadth_2'] == 'EMPTY_NA',
+                   'hierarchy_Q1_depth_breadth_2'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q1_depth_breadth_3'] == 'EMPTY_NA',
+                   'hierarchy_Q1_depth_breadth_3'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q2_intuitive_labels_1'] == 'EMPTY_NA',
+                   'hierarchy_Q2_intuitive_labels_1'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q2_intuitive_labels_2'] == 'EMPTY_NA',
+                   'hierarchy_Q2_intuitive_labels_2'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q2_intuitive_labels_3'] == 'EMPTY_NA',
+                   'hierarchy_Q2_intuitive_labels_3'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q3_temporal_1'] == 'EMPTY_NA',
+                   'hierarchy_Q3_temporal_1'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q3_temporal_2'] == 'EMPTY_NA',
+                   'hierarchy_Q3_temporal_2'] = 0
+    hier_ce_df.loc[hier_ce_df['hierarchy_Q3_temporal_3'] == 'EMPTY_NA',
+                   'hierarchy_Q3_temporal_3'] = 0
+
+    hier_ce_df = hier_ce_df.astype({
+        'hierarchy_Q1_depth_breadth_1': 'int',
+        'hierarchy_Q1_depth_breadth_2': 'int',
+        'hierarchy_Q1_depth_breadth_3': 'int',
+        'hierarchy_Q2_intuitive_labels_1': 'int',
+        'hierarchy_Q2_intuitive_labels_2': 'int',
+        'hierarchy_Q2_intuitive_labels_3': 'int',
+        'hierarchy_Q3_temporal_1': 'int',
+        'hierarchy_Q3_temporal_2': 'int',
+        'hierarchy_Q3_temporal_3': 'int',
+    })
+
+    g = hier_ce_df.groupby(['ta1_team', 'ta2_team'])
+    grouped_hier_dict = dict()
+    for name, grouped_df in g:
+        grouped_hier_dict[name] = grouped_df
+    rating_columns_1 = ['hierarchy_Q1_depth_breadth_1',
+                        'hierarchy_Q1_depth_breadth_2',
+                        'hierarchy_Q1_depth_breadth_3']
+    rating_columns_2 = ['hierarchy_Q2_intuitive_labels_1',
+                        'hierarchy_Q2_intuitive_labels_2',
+                        'hierarchy_Q2_intuitive_labels_3']
+    rating_columns_3 = ['hierarchy_Q3_temporal_1',
+                        'hierarchy_Q3_temporal_2',
+                        'hierarchy_Q3_temporal_3']
+
+    compute_kappa_scores("depth_breadth", output_dir, grouped_hier_dict, rating_columns_1)
+    compute_kappa_scores("intuitiveness", output_dir, grouped_hier_dict, rating_columns_2)
+    compute_kappa_scores("temporal", output_dir, grouped_hier_dict, rating_columns_3)
+
+    # compute event, argument, relation stats
+    agg_ev_df = ta2_ev_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'num_events': ['mean', 'min', 'max', 'std'],
+        'num_events_instantiated': ['mean', 'min', 'max', 'std'],
+        'num_events_predicted': ['mean', 'min', 'max', 'std'],
+        'precision_matchwextrarel': ['mean', 'min', 'max', 'std'],
+        'recall_matchwextrarel': ['mean', 'min', 'max', 'std'],
+        'f1_matchwextrarel': ['mean', 'min', 'max', 'std'],
+        'precision_hierarchy': ['mean', 'min', 'max', 'std']}).reset_index()
+
+    agg_arg_df = ta2_arg_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_args_from_ins_matchwextrarel': ['mean', 'min', 'max', 'std'],
+        'recall_args_from_ins_matchwextrarel': ['mean', 'min', 'max', 'std'],
+        'f1_args_from_ins_matchwextrarel': ['mean', 'min', 'max', 'std']}).reset_index()
+    agg_arg_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+
+    agg_pred_df = ta2_pred_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'num_pred_events_assessed': ['mean', 'min', 'max', 'std'],
+        'num_pred_events_assessed_plausible': ['mean', 'min', 'max', 'std'],
+        'num_pred_events_assessed_implausible': ['mean', 'min', 'max', 'std']}).reset_index()
+    agg_pred_df.sort_values(by=['ta2_team', 'ta1_team'], inplace=True)
+
+    ta2_stats_df['non_ins_args'] = ta2_stats_df['arg_count'] - ta2_stats_df['ins_arg_count']
+    agg_arg_basic_df = ta2_stats_df.groupby(['ta1_team_name', 'ta2_team_name']).agg({
+        'non_ins_args': ['mean', 'min', 'max'],
+        'ins_pred_arg_count': ['mean', 'min', 'max'],
+        'ins_arg_in_ins_ev_count': ['mean', 'min', 'max']
+    }).reset_index()
+
+    agg_rel_df = ta2_stats_df.groupby(['ta1_team_name', 'ta2_team_name']).agg({
+        'rel_count': ['mean', 'min', 'max']
+    }).reset_index()
+
+    agg_hier_df = ta2_stats_df.groupby(['ta1_team_name', 'ta2_team_name']).agg({
+        'ev_top_level_count': ['mean', 'min', 'max'],
+        'ev_leaf_count': ['mean', 'min', 'max'],
+        'avg_hier_depth': ['mean', 'min', 'max'],
+        'max_hier_depth': ['mean', 'min', 'max']
+    }).reset_index()
+
+    chemcial_rows = []
+    riots_rows = []
+    disease_rows = []
+    bomb_rows = []
+    coup_rows = []
+
+    for _, row in ta2_ev_df.iterrows():
+        if row['ce'] in ['ce2201_abridged', 'ce2202_abridged', 'ce2203_abridged']:
+            chemcial_rows.append(row)
+        elif row['ce'] in ['ce2204_abridged', 'ce2205_abridged', 'ce2206_abridged']:
+            riots_rows.append(row)
+        elif row['ce'] in ['ce2207_abridged', 'ce2208_abridged', 'ce2209_abridged']:
+            disease_rows.append(row)
+        elif row['ce'] in ['ce2210_abridged', 'ce2211_abridged', 'ce2212_abridged']:
+            bomb_rows.append(row)
+        else:
+            coup_rows.append(row)
+
+    chemical_df = pd.DataFrame(chemcial_rows)
+    riots_df = pd.DataFrame(riots_rows)
+    disease_df = pd.DataFrame(disease_rows)
+    bomb_df = pd.DataFrame(bomb_rows)
+    coup_df = pd.DataFrame(coup_rows)
+
+    agg_chemical_df = chemical_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_matchwextrarel': ['mean'],
+        'recall_matchwextrarel': ['mean'],
+        'f1_matchwextrarel': ['mean'],
+        'precision_hierarchy': ['mean']}).reset_index()
+    agg_riots_df = riots_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_matchwextrarel': ['mean'],
+        'recall_matchwextrarel': ['mean'],
+        'f1_matchwextrarel': ['mean'],
+        'precision_hierarchy': ['mean']}).reset_index()
+    agg_disease_df = disease_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_matchwextrarel': ['mean'],
+        'recall_matchwextrarel': ['mean'],
+        'f1_matchwextrarel': ['mean'],
+        'precision_hierarchy': ['mean']}).reset_index()
+    agg_bomb_df = bomb_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_matchwextrarel': ['mean'],
+        'recall_matchwextrarel': ['mean'],
+        'f1_matchwextrarel': ['mean'],
+        'precision_hierarchy': ['mean']}).reset_index()
+    agg_coup_df = coup_df.groupby(['ta1_team', 'ta2_team']).agg({
+        'precision_matchwextrarel': ['mean'],
+        'recall_matchwextrarel': ['mean'],
+        'f1_matchwextrarel': ['mean'],
+        'precision_hierarchy': ['mean']}).reset_index()
+
+    agg_ce_df.to_csv(os.path.join(aggregated_output_dir,
+                                  "TA2_Aggregated_CE_stats.csv"), index=False)
+    agg_ce_split_df.to_csv(os.path.join(aggregated_output_dir,
+                                        "TA2_Aggregated_CE_split_stats.csv"), index=False)
+    agg_ev_df.to_csv(os.path.join(aggregated_output_dir,
+                                  "TA2_Aggregated_events_stats.csv"), index=False)
+    agg_arg_df.to_csv(os.path.join(aggregated_output_dir,
+                                   "TA2_Aggregated_arguments_stats.csv"), index=False)
+    agg_pred_df.to_csv(os.path.join(aggregated_output_dir,
+                                    "TA2_Aggregated_prediction_stats.csv"), index=False)
+    agg_arg_basic_df.to_csv(os.path.join(aggregated_output_dir,
+                                         "TA2_Aggregated_arguments_basic_stats.csv"), index=False)
+    agg_rel_df.to_csv(os.path.join(aggregated_output_dir,
+                                   "TA2_Aggregated_relations_stats.csv"), index=False)
+    agg_hier_df.to_csv(os.path.join(aggregated_output_dir,
+                                    "TA2_Aggregated_hierarchy_stats.csv"), index=False)
+
+    agg_chemical_df.to_csv(os.path.join(aggregated_output_dir,
+                                        "TA2_Aggregated_events_stats_chemical.csv"), index=False)
+    agg_riots_df.to_csv(os.path.join(aggregated_output_dir,
+                                     "TA2_Aggregated_events_stats_riots.csv"), index=False)
+    agg_disease_df.to_csv(os.path.join(aggregated_output_dir,
+                                       "TA2_Aggregated_events_stats_disease.csv"), index=False)
+    agg_bomb_df.to_csv(os.path.join(aggregated_output_dir,
+                                    "TA2_Aggregated_events_stats_bomb.csv"), index=False)
+    agg_coup_df.to_csv(os.path.join(aggregated_output_dir,
+                                    "TA2_Aggregated_events_stats_coup.csv"), index=False)
+
+# not used in phase 2b
+
+
 def produce_summary_matrix(output_dir):
     ta2_ce_df = pd.read_csv(os.path.join(output_dir, "TA2_Assessed_CE_stats.csv"))
     ta2_ev_df = pd.read_csv(os.path.join(output_dir, "TA2_Assessed_Event_stats.csv"))
@@ -477,9 +724,18 @@ def assess_ce_row(ta2_ceinstance, assessment_collection):
     as_ce_df = assessment_collection.ce_df
     as_ce_df = as_ce_df.loc[as_ce_df['schema_instance_id'] ==
                             ta2_ceinstance.schema_instance_id, :].copy()
+    # We will have three rows in as_ce_df in phase2bEval
+    as_ce_result_df = as_ce_df.loc[as_ce_df['schema_name_relevance'] != "EMPTY_NA"]
 
-    # We have to address EMPTY_NA, so we make it missing
-    as_ce_df.loc[as_ce_df['schema_name_relevance'] == "EMPTY_NA", 'schema_name_relevance'] = np.nan
+    # In phase2b, we have 3 independent assessments for hierarchy.
+    h1_list = as_ce_df['hierarchy_Q1_depth_breadth'].to_list()
+    h2_list = as_ce_df['hierarchy_Q2_intuitive_labels'].to_list()
+    h3_list = as_ce_df['hierarchy_Q3_temporal'].to_list()
+
+    while len(h1_list) < 3:
+        h1_list.append("no assessment")
+        h2_list.append("no assessment")
+        h3_list.append("no assessment")
 
     ce_row = {'file_name': ta2_ceinstance.ce_instance_file_name_base,
               'schema_instance_id': ta2_ceinstance.schema_instance_id,
@@ -487,9 +743,18 @@ def assess_ce_row(ta2_ceinstance, assessment_collection):
               'ta2_team': ta2_ceinstance.ta2_team_name,
               'ce': ta2_ceinstance.ce_name,
               'assessment': 'yes',
-              'instance_status': as_ce_df['instance_status'].to_string(index=False),
-              'schema_name_relevance': pd.to_numeric(as_ce_df['schema_name_relevance'],
-                                                     downcast='integer').to_string(index=False)}
+              'instance_status': as_ce_result_df['instance_status'].to_string(index=False),
+              'schema_name_relevance': pd.to_numeric(as_ce_result_df['schema_name_relevance'],
+                                                     downcast='integer').to_string(index=False),
+              'hierarchy_Q1_depth_breadth_1': h1_list[0],
+              'hierarchy_Q1_depth_breadth_2': h1_list[1],
+              'hierarchy_Q1_depth_breadth_3': h1_list[2],
+              'hierarchy_Q2_intuitive_labels_1': h2_list[0],
+              'hierarchy_Q2_intuitive_labels_2': h2_list[1],
+              'hierarchy_Q2_intuitive_labels_3': h2_list[2],
+              'hierarchy_Q3_temporal_1': h3_list[0],
+              'hierarchy_Q3_temporal_2': h3_list[1],
+              'hierarchy_Q3_temporal_3': h3_list[2]}
     return ce_row
 
 
@@ -520,27 +785,41 @@ def assess_ep_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
         ins_ev_df['ep_match_status']), :].shape[0]
     num_events_predicted_assessed = pred_ev_df.loc[pd.notna(
         pred_ev_df['ep_match_status']), :].shape[0]
+
+    # if ta2_ceinstance.ta2_team_name == 'IBM' and \
+    #     ta2_ceinstance.ta1_team_name == 'IBM' and \
+    #         ta2_ceinstance.ce_name == 'ce2201_abridged':
+    #     ev_list = ev_df['ev_id'].to_list()
+    #     assessed_ev_list = ev_df.loc[pd.notna(ev_df['ep_match_status']), 'ev_id'].to_list()
+
+    #     print(list(set(ev_list) - set(assessed_ev_list)))
+
     num_events_match = ev_df.loc[ev_df['ep_match_status'] == 'match', :].shape[0]
     num_events_extrarel = ev_df.loc[ev_df['ep_match_status'] == 'extra-rel', :].shape[0]
     num_events_extrairrel = ev_df.loc[ev_df['ep_match_status'] == 'extra-irrel', :].shape[0]
+    num_events_hier = ev_df.loc[ev_df['ep_match_status'] == 'hierarchical', :].shape[0]
+    num_events_noarg = ev_df.loc[ev_df['ep_match_status'] == 'no-args', :].shape[0]
 
     num_ann_ev_match = len(ev_df.loc[(ev_df['ep_match_status'] == 'match') &
                                      (ev_df['reference_ep_id'].str.contains('EMPTY') == False),
                                      'reference_ep_id'].unique())
-    num_ann_ev_matchwextrarel = len(ev_df.loc[((ev_df['ep_match_status'] == 'match') |
-                                               (ev_df['ep_match_status'] == 'match-inexact') |
-                                               (ev_df['ep_match_status'] == 'extra-rel')) &
-                                              (ev_df['reference_ep_id'].str.contains(
-                                                  'EMPTY') == False),
-                                              'reference_ep_id'].unique())
+    # num_ann_ev_matchwextrarel = len(ev_df.loc[((ev_df['ep_match_status'] == 'match') |
+    #                                            (ev_df['ep_match_status'] == 'extra-rel')) &
+    #                                           (ev_df['reference_ep_id'].str.contains(
+    #                                               'EMPTY') == False),
+    #                                           'reference_ep_id'].unique())
     num_ann_events = len(task1_ceannotation.ep_df)
 
-    num_pred_events_match = len(pred_ev_df.loc[pred_ev_df['ep_match_status']
-                                               == 'match', 'system_ep_id'].unique())
-    num_pred_events_extrarel = len(pred_ev_df.loc[pred_ev_df['ep_match_status']
-                                                  == 'extra-rel', 'system_ep_id'].unique())
-    num_pred_events_extrairrel = len(pred_ev_df.loc[pred_ev_df['ep_match_status']
-                                                    == 'extra-irrel', 'system_ep_id'].unique())
+    num_pred_events_match = pred_ev_df.loc[pred_ev_df['ep_match_status']
+                                           == 'match', 'system_ep_id'].shape[0]
+    num_pred_events_extrarel = pred_ev_df.loc[pred_ev_df['ep_match_status']
+                                              == 'extra-rel', 'system_ep_id'].shape[0]
+    num_pred_events_extrairrel = pred_ev_df.loc[pred_ev_df['ep_match_status']
+                                                == 'extra-irrel', 'system_ep_id'].shape[0]
+    num_pred_events_hier = pred_ev_df.loc[pred_ev_df['ep_match_status']
+                                          == 'hierarchical', 'system_ep_id'].shape[0]
+    num_pred_events_noarg = pred_ev_df.loc[pred_ev_df['ep_match_status']
+                                           == 'no-args', 'system_ep_id'].shape[0]
 
     num_ann_hidden_events = len(partition_df.loc[partition_df['partition'] == 'hidden', :])
     num_ann_exposed_events = len(partition_df.loc[partition_df['partition'] == 'exposed', :])
@@ -552,13 +831,36 @@ def assess_ep_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
          == 'match') &
         (partition_match_df['partition']
          == 'hidden'), "eventprimitive_id"].unique())
+
+    # print out materalized predictions that matched hidden annotation events
+    # if ta2_ceinstance.ta2_team_name == 'RESIN' and \
+    #     ta2_ceinstance.ce_name == 'ce2208_abridged':
+    #         print(f'TA1: {ta2_ceinstance.ta1_team_name}')
+    #         print("Reference Ids: ", partition_match_df.loc[
+    #             (partition_match_df['ep_match_status'] == 'match') &
+    #             (partition_match_df['partition'] == 'hidden'),
+    #             "eventprimitive_id"].unique())
+    #         print("System EP Ids: ", partition_match_df.loc[
+    #             (partition_match_df['ep_match_status'] == 'match') &
+    #             (partition_match_df['partition'] == 'hidden'),
+    #             "system_ep_id"].unique())
+
     per_pred_matched_hidden_events = num_pred_matched_hidden_events / num_ann_hidden_events * 100
 
     per_pred_events_match = num_pred_events_match / num_events_predicted * 100
     precision_match = num_events_match/num_events_assessed
-    recall_match = num_ann_ev_match/num_ann_events
-    precision_matchwextrarel = (num_events_match + num_events_extrarel)/num_events_assessed
+    recall_match = num_ann_ev_match / num_ann_events
+    precision_matchwextrarel = (num_events_match + num_events_extrarel) / num_events_assessed
     recall_matchwextrarel = 0  # computed later
+
+    # hierarchy stats
+    num_correct_hier = ev_df.loc[((ev_df['ep_match_status'] == 'match') |
+                                  (ev_df['ep_match_status'] == 'extra-rel')) &
+                                 (ev_df['hierarchy_placement'] == 'yes'), :].shape[0]
+    try:
+        precision_hierarchy = num_correct_hier / (num_events_match + num_events_extrarel)
+    except ZeroDivisionError:
+        precision_hierarchy = 0
 
     # Now do top k, with k = 20
     k = 20
@@ -578,14 +880,26 @@ def assess_ep_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
     recall_match_at_20 = num_ann_ev_match_at_20/num_ann_events
     precision_matchwextrarel_at_20 = (num_events_match_at_20 +
                                       num_events_extrarel_at_20)/num_events_assessed_at_20
-    f1_match = 2*(precision_match * recall_match)/(precision_match + recall_match)
-    f1_matchwextrarel = 2*(precision_matchwextrarel * recall_matchwextrarel) \
-        / (precision_matchwextrarel + recall_matchwextrarel)
-    f1_match_at_20 = 2*(precision_match_at_20 * recall_match_at_20) / (precision_match_at_20 +
-                                                                       recall_match_at_20)
-    f1_matchwextrarel_at_20 = 2*(precision_matchwextrarel_at_20 *
-                                 recall_match_at_20) / (precision_matchwextrarel_at_20 +
-                                                        recall_match_at_20)
+    try:
+        f1_match = 2*(precision_match * recall_match)/(precision_match + recall_match)
+    except ZeroDivisionError:
+        f1_match = 0
+    try:
+        f1_matchwextrarel = 2*(precision_matchwextrarel * recall_matchwextrarel) \
+            / (precision_matchwextrarel + recall_matchwextrarel)
+    except ZeroDivisionError:
+        f1_matchwextrarel = 0
+    try:
+        f1_match_at_20 = 2*(precision_match_at_20 * recall_match_at_20) / (precision_match_at_20 +
+                                                                           recall_match_at_20)
+    except ZeroDivisionError:
+        f1_match_at_20 = 0
+    try:
+        f1_matchwextrarel_at_20 = 2*(precision_matchwextrarel_at_20 *
+                                     recall_match_at_20) / (precision_matchwextrarel_at_20 +
+                                                            recall_match_at_20)
+    except ZeroDivisionError:
+        f1_matchwextrarel_at_20 = 0
 
     ep_row = {'file_name': ta2_ceinstance.ce_instance_file_name_base,
               'schema_instance_id': ta2_ceinstance.schema_instance_id,
@@ -599,13 +913,16 @@ def assess_ep_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
               'num_events_predicted_assessed': num_events_predicted_assessed,
               'num_events_match': num_events_match, 'num_events_extrarel': num_events_extrarel,
               'num_events_extrairrel': num_events_extrairrel,
+              'num_events_hier': num_events_hier,
+              'num_events_noarg': num_events_noarg,
               'num_ann_events_matched': num_ann_ev_match,
               'num_ann_events': num_ann_events,
               'num_ann_hidden_events': num_ann_hidden_events,
               'num_ann_exposed_events': num_ann_exposed_events,
-              'num_ann_ev_matchwextrarel': num_ann_ev_matchwextrarel,
+              #   'num_ann_ev_matchwextrarel': num_ann_ev_matchwextrarel,
               'per_pred_events_match': per_pred_events_match,
               'precision_match': precision_match, 'recall_match': recall_match,
+              'precision_hierarchy': precision_hierarchy,
               'precision_matchwextrarel': precision_matchwextrarel,
               'recall_matchwextrarel': recall_matchwextrarel,
               'num_events_assessed_at_20': num_events_assessed_at_20,
@@ -619,6 +936,8 @@ def assess_ep_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
               'num_pred_events_match': num_pred_events_match,
               'num_pred_events_extrarel': num_pred_events_extrarel,
               'num_pred_events_extrairrel': num_pred_events_extrairrel,
+              'num_pred_events_hier': num_pred_events_hier,
+              'num_pred_events_noarg': num_pred_events_noarg,
               'num_pred_matched_hidden_events': num_pred_matched_hidden_events,
               'per_pred_matched_hidden_events': per_pred_matched_hidden_events,
               'f1_match': f1_match,
@@ -641,6 +960,14 @@ def assess_ke_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
 
     arg_df = ta2_ceinstance.arg_df
     num_arguments = arg_df.shape[0]
+
+    ev_df = ta2_ceinstance.ev_df
+    pred_ev_df = get_ta2_predicted_events(ev_df).copy()
+    ins_ev_df = get_ta2_instantiated_events(ev_df).copy()
+
+    num_ins_args = len(arg_df.loc[(pd.notnull(arg_df['arg_ta2entity'])) &
+                                  (arg_df['arg_ta2entity'] != "kairos:NULL"), :])
+
     arg_df['system_ep_id'] = arg_df['ev_id'].str.split('/').str[0:2].str.join("/")
     arg_df['system_ke_id'] = arg_df['arg_id'].str.split('/').str[0:2].str.join("/")
     arg_df['system_ep_ke_id'] = arg_df['system_ep_id'] + '_' + arg_df['system_ke_id']
@@ -650,7 +977,7 @@ def assess_ke_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
 
     num_arg_with_matched_ep = len(arg_df.loc[(arg_df['ep_match_status'] == 'match') |
                                              (arg_df['ep_match_status'] == 'extra-rel'),
-                                             'system_ke_id'].unique())
+                                             'system_ke_value_id'].unique())  # updated in Phase2b
 
     num_ann_arguments = len(task1_ceannotation.arg_df.loc[(task1_ceannotation.
                                                            arg_df['eventprimitive_id'].str.
@@ -680,6 +1007,52 @@ def assess_ke_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
         'reference_ke_id'].unique())
 
     num_arguments_assessed = arg_df.loc[pd.notna(arg_df['ke_match_status']), :].shape[0]
+
+    assessed_arg_df = arg_df.loc[pd.notna(arg_df['ke_match_status']), :]
+    assessed_arg_from_ins_ev_df = pd.merge(assessed_arg_df.loc[:, ['schema_instance_id',
+                                                                   'ta2_team_name',
+                                                                   'ta1_team_name',
+                                                                   'arg_id', 'ev_id',
+                                                                   'ke_match_status',
+                                                                   'reference_ke_id',
+                                                                   'arg_entity',
+                                                                   'arg_ta2entity']],
+                                           ins_ev_df.loc[:, ['ev_id']],
+                                           on='ev_id', how='inner')
+    assessed_arg_from_ins_ev = assessed_arg_from_ins_ev_df.shape[0]
+
+    # compute some stats coming from instantiated events only
+    assessed_arg_from_pred_ev_df = pd.merge(assessed_arg_df.loc[:,
+                                                                ['schema_instance_id',
+                                                                 'ta2_team_name',
+                                                                 'ta1_team_name',
+                                                                 'arg_id', 'ev_id',
+                                                                 'arg_entity',
+                                                                 'arg_ta2entity']],
+                                            pred_ev_df.loc[:, ['ev_id']],
+                                            on='ev_id', how='inner')
+    assessed_arg_from_pred_ev = assessed_arg_from_pred_ev_df.shape[0]
+
+    args_from_ins_matchwextrarel = assessed_arg_from_ins_ev_df.loc[
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'match') |
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'match-inexact') |
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'extra-rel'), :].\
+        shape[0]
+    ann_args_from_ins_matchwextrarel = len(assessed_arg_from_ins_ev_df.loc[
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'match') |
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'match-inexact') |
+        (assessed_arg_from_ins_ev_df['ke_match_status'] == 'extra-rel') &
+        (assessed_arg_from_ins_ev_df['reference_ke_id'].str.contains(
+            'EMPTY') == False), 'reference_ke_id'].unique())
+    precision_args_from_ins_matchwextrarel = args_from_ins_matchwextrarel / num_arguments_assessed
+    recall_args_from_ins_matchwextrarel = ann_args_from_ins_matchwextrarel / num_ann_arguments
+    try:
+        f1_args_from_ins_matchwextrarel = (2*precision_args_from_ins_matchwextrarel *
+                                           recall_args_from_ins_matchwextrarel) /\
+                                          (precision_args_from_ins_matchwextrarel +
+                                           recall_args_from_ins_matchwextrarel)
+    except ZeroDivisionError:
+        f1_args_from_ins_matchwextrarel = 0
 
     num_arguments_match_exact = arg_df.loc[arg_df['ke_match_status'] == 'match', :].shape[0]
     num_arguments_matchwinexact = arg_df.loc[(arg_df['ke_match_status'] == 'match') |
@@ -755,11 +1128,17 @@ def assess_ke_row(task1_ceannotation, ta2_ceinstance, assessment_collection):
               'ta2_team': ta2_ceinstance.ta2_team_name,
               'ce': ta2_ceinstance.ce_name,
               'num_arguments': num_arguments,
+              'num_ins_args': num_ins_args,
+              'num_arguments_assessed': num_arguments_assessed,
+              'assessed_arg_from_ins_ev': assessed_arg_from_ins_ev,
+              'assessed_arg_from_pred_ev': assessed_arg_from_pred_ev,
               'num_ann_arguments': num_ann_arguments,
+              'precision_args_from_ins_matchwextrarel': precision_args_from_ins_matchwextrarel,
+              'recall_args_from_ins_matchwextrarel': recall_args_from_ins_matchwextrarel,
+              'f1_args_from_ins_matchwextrarel': f1_args_from_ins_matchwextrarel,
               'num_ann_arg_match': num_ann_arg_match,
               'num_ann_arg_match_inexact': num_ann_arg_match_inexact,
               'num_ann_arg_match_extrarel': num_ann_arg_match_extrarel,
-              'num_arguments_assessed': num_arguments_assessed,
               'num_arg_with_matched_ep': num_arg_with_matched_ep,
               'num_arguments_match_exact': num_arguments_match_exact,
               'num_arguments_matchwinexact': num_arguments_matchwinexact,
@@ -810,33 +1189,37 @@ def assess_pred_row(ta2_ceinstance, assessment_collection):
     ev_df['system_ep_id'] = ev_df['ev_id'].str.split('/').str[0:2].str.join("/")
     ev_df = ev_df.merge(as_pred_df, how="outer", on=["schema_instance_id", "system_ep_id"])
 
-    num_pred_events_assessed = len(ev_df.loc[pd.notna(ev_df['system_ep_id']) &
-                                             (ev_df['system_ke_id'] == "EMPTY_NA"),
-                                             'system_ep_id'].unique())
-    num_pred_events_assessed_plausible = len(ev_df.loc[
+    num_pred_events_assessed = ev_df.loc[pd.notna(ev_df['system_ep_id']) &
+                                         (ev_df['system_ke_id'] == "EMPTY_NA"),
+                                         'system_ep_id'].shape[0]
+    num_pred_events_assessed_plausible = ev_df.loc[
         pd.notna(ev_df['system_ep_id']) &
         (ev_df['system_ke_id'] == "EMPTY_NA") &
         (ev_df['prediction_plausible_status'] == "yes"),
-        'system_ep_id'].unique())
-    num_pred_events_assessed_implausible = len(ev_df.loc[
+        'system_ep_id'].shape[0]
+    num_pred_events_assessed_implausible = ev_df.loc[
         pd.notna(ev_df['system_ep_id']) &
         (ev_df['system_ke_id'] == "EMPTY_NA") &
         (ev_df['prediction_plausible_status'] == "no"),
-        'system_ep_id'].unique())
+        'system_ep_id'].shape[0]
+    num_pred_events_appr_hierarchy = ev_df.loc[
+        pd.notna(ev_df['system_ep_id']) &
+        (ev_df['system_ke_id'] == "EMPTY_NA") &
+        (ev_df['hierarchy_placement'] == "yes"),
+        'system_ep_id'].shape[0]
+
     percentage_pred_events_assessed = num_pred_events_assessed / num_events_predicted * 100
-    precision_pred_events_assessed = num_pred_events_assessed_plausible /\
+    percentage_pred_events_hierarchy = num_pred_events_appr_hierarchy /\
         num_pred_events_assessed * 100
+    precision_pred_events_assessed = num_pred_events_assessed_plausible /\
+        num_pred_events_assessed
     recall_pred_events_assessed = num_pred_events_assessed_plausible / num_events_predicted
-    F1_pred_events_assessed = (2 * precision_pred_events_assessed * recall_pred_events_assessed) /\
-        (precision_pred_events_assessed + recall_pred_events_assessed)
-    num_pred_events_justfi_yes = len(ev_df.loc[pd.notna(ev_df['system_ep_id']) &
-                                               (ev_df['system_ke_id'] == "EMPTY_NA") &
-                                               (ev_df['prediction_justification_status'] == "yes"),
-                                               'system_ep_id'].unique())
-    num_pred_events_justfi_no = len(ev_df.loc[pd.notna(ev_df['system_ep_id']) &
-                                              (ev_df['system_ke_id'] == "EMPTY_NA") &
-                                              (ev_df['prediction_justification_status'] == "no"),
-                                              'system_ep_id'].unique())
+    try:
+        F1_pred_events_assessed =\
+            (2 * precision_pred_events_assessed * recall_pred_events_assessed) \
+            / (precision_pred_events_assessed + recall_pred_events_assessed)
+    except ZeroDivisionError:
+        F1_pred_events_assessed = 0
 
     arg_df = ta2_ceinstance.arg_df
     num_arguments = arg_df.shape[0]
@@ -846,19 +1229,27 @@ def assess_pred_row(ta2_ceinstance, assessment_collection):
     arg_df = arg_df.merge(as_pred_df, how="outer", on=["schema_instance_id", "system_ep_ke_id"])
     arg_df = arg_df.merge(as_pred_arg_df, how="outer", on=["schema_instance_id", "system_ep_ke_id"])
 
+    """
+    To-do: fix the error (predicted arguments)
+    """
     num_arguments_predicted = len(arg_df.loc[arg_df['arg_ta2provenance'] == 'kairos:NULL',
                                              'system_ep_ke_id'].unique())
-    num_pred_arguments_assessed = len(arg_df.loc[arg_df['system_ep_ke_id'].str.contains('EMPTY_NA'),
-                                                 'system_ep_ke_id'].unique())
+    num_pred_arguments_assessed = len(arg_df.loc[
+        arg_df['system_ke_value_id'].str.contains('EMPTY_NA') == False,
+        'system_ke_value_id'].unique())
     num_pred_arguments_assessed_plausible = len(arg_df.loc[
-        arg_df['system_ep_ke_id'].str.contains('EMPTY_NA') &
-        (arg_df['prediction_justification_status'] == 'yes'),
-        'system_ep_ke_id'].unique())
+        arg_df['system_ke_value_id'].str.contains('EMPTY_NA') &
+        (arg_df['prediction_plausible_status'] == 'yes'),
+        'system_ke_value_id'].unique())
     num_pred_arguments_assessed_implausible = len(arg_df.loc[
-        arg_df['system_ep_ke_id'].str.contains('EMPTY_NA') &
-        (arg_df['prediction_justification_status'] == 'no'),
-        'system_ep_ke_id'].unique())
-    percentage_pred_arguments_assessed = num_pred_arguments_assessed / num_arguments_predicted * 100
+        arg_df['system_ke_value_id'].str.contains('EMPTY_NA') &
+        (arg_df['prediction_plausible_status'] == 'no'),
+        'system_ke_value_id'].unique())
+    try:
+        percentage_pred_arguments_assessed = num_pred_arguments_assessed / \
+            num_arguments_predicted * 100
+    except ZeroDivisionError:
+        percentage_pred_arguments_assessed = 0
     try:
         precision_pred_arguments_assessed = num_pred_arguments_assessed_plausible \
             / num_pred_arguments_assessed * 100
@@ -892,18 +1283,20 @@ def assess_pred_row(ta2_ceinstance, assessment_collection):
                 'num_pred_events_assessed': num_pred_events_assessed,
                 'num_pred_events_assessed_plausible': num_pred_events_assessed_plausible,
                 'num_pred_events_assessed_implausible': num_pred_events_assessed_implausible,
+                'num_pred_events_appr_hierarchy': num_pred_events_appr_hierarchy,
                 'percentage_pred_events_assessed': percentage_pred_events_assessed,
                 'precision_pred_events_assessed': precision_pred_events_assessed,
                 'recall_pred_events_assessed': recall_pred_events_assessed,
                 'F1_pred_events_assessed': F1_pred_events_assessed,
-                'num_pred_events_justfi_yes': num_pred_events_justfi_yes,
-                'num_pred_events_justfi_no': num_pred_events_justfi_no,
+                # 'num_pred_events_justfi_yes': num_pred_events_justfi_yes,
+                # 'num_pred_events_justfi_no': num_pred_events_justfi_no,
                 'num_arguments': num_arguments,
                 'num_arguments_predicted': num_arguments_predicted,
                 'num_pred_arguments_assessed': num_pred_arguments_assessed,
                 'num_pred_arguments_assessed_plausible': num_pred_arguments_assessed_plausible,
                 'num_pred_arguments_assessed_implausible': num_pred_arguments_assessed_implausible,
                 'percentage_pred_arguments_assessed': percentage_pred_arguments_assessed,
+                'percentage_pred_events_hierarchy': percentage_pred_events_hierarchy,
                 'precision_pred_arguments_assessed': precision_pred_arguments_assessed,
                 'recall_pred_arguments_assessed': recall_pred_arguments_assessed,
                 'F1_pred_arguments_assessed': F1_pred_arguments_assessed,
@@ -933,6 +1326,9 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
+    """
+    ABRIDGED CHECK!!!!!!!!
+    """
     for ta2_team in ta2_team_list:
 
         if not os.path.isdir(os.path.join(output_dir, ta2_team)):
@@ -957,11 +1353,9 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
                 task1_ce = ce[0:re.search("[0-9]+", ce).end()]
                 task1_ceannotation = task1_annotation_collection.annotation_dict['task1|{}'.format(
                     task1_ce)]
-
                 # Check if assessed. If not, automatically give default row
                 # Check for the files:
                 schema_instance_id = ta2_ceinstance.schema_instance_id
-
                 if schema_instance_id in assessment_collection.ce_df['schema_instance_id'].\
                         unique().tolist():
                     ce_row = assess_ce_row(ta2_ceinstance, assessment_collection)
@@ -972,8 +1366,17 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
                               'ta2_team': ta2_ceinstance.ta2_team_name,
                               'ce': ta2_ceinstance.ce_name,
                               'assessment': 'no',
-                              'instance_status': 0,
-                              'schema_name_relevance': 0}
+                              'instance_status': "no assessment",
+                              'schema_name_relevance': "no assessment",
+                              'hierarchy_Q1_depth_breadth_1': "no assessment",
+                              'hierarchy_Q1_depth_breadth_2': "no assessment",
+                              'hierarchy_Q1_depth_breadth_3': "no assessment",
+                              'hierarchy_Q2_intuitive_labels_1': "no assessment",
+                              'hierarchy_Q2_intuitive_labels_2': "no assessment",
+                              'hierarchy_Q2_intuitive_labels_3': "no assessment",
+                              'hierarchy_Q3_temporal_1': "no assessment",
+                              'hierarchy_Q3_temporal_2': "no assessment",
+                              'hierarchy_Q3_temporal_3': "no assessment"}
 
                 if schema_instance_id in assessment_collection.ep_df['schema_instance_id'].\
                         unique().tolist():
@@ -1002,13 +1405,16 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
                                     'num_events_predicted_assessed': 0,
                                     'num_events_match': 0, 'num_events_extrarel': 0,
                                     'num_events_extrairrel': 0,
+                                    'num_events_hier': 0,
+                                    'num_events_noarg': 0,
                                     'num_ann_events_matched': 0, 'num_ann_events': num_ann_events,
                                     'num_ann_hidden_events': num_ann_hidden_events,
                                     'num_ann_exposed_events': num_ann_exposed_events,
-                                    'num_ann_ev_matchwextrarel': 0,
+                                    # 'num_ann_ev_matchwextrarel': 0,
                                     'per_pred_events_match': 0,
                                     'precision_match': np.nan, 'recall_match': np.nan,
                                     'precision_matchwextrarel': np.nan,
+                                    'precision_hierarchy': np.nan,
                                     'recall_matchwextrarel': np.nan,
                                     'num_events_assessed_at_20': 0,
                                     'num_events_match_at_20': 0,
@@ -1033,21 +1439,34 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
                     ke_row = assess_ke_row(task1_ceannotation, ta2_ceinstance,
                                            assessment_collection)
                 else:
-                    num_arguments = ta2_ceinstance.arg_df.shape[0]
+                    arg_df = ta2_ceinstance.arg_df
+                    num_arguments = arg_df.shape[0]
                     num_ann_arguments = len(task1_ceannotation.arg_df.
                                             loc[(task1_ceannotation.arg_df['eventprimitive_id'].str.
                                                  contains('EMPTY') == False), 'arg_id'])
+                    ev_df = ta2_ceinstance.ev_df
+                    pred_ev_df = get_ta2_predicted_events(ev_df).copy()
+
+                    num_ins_args = len(arg_df.loc[(pd.notnull(arg_df['arg_ta2entity'])) &
+                                                  (arg_df['arg_ta2entity'] != "kairos:NULL"), :])
+
                     ke_row = {'file_name': ta2_ceinstance.ce_instance_file_name_base,
                               'schema_instance_id': ta2_ceinstance.schema_instance_id,
                               'ta1_team': ta2_ceinstance.ta1_team_name,
                               'ta2_team': ta2_ceinstance.ta2_team_name,
                               'ce': ta2_ceinstance.ce_name,
                               'num_arguments': num_arguments,
+                              'num_ins_args': num_ins_args,
+                              'num_arguments_assessed': 0,
+                              'assessed_arg_from_ins_ev': 0,
+                              'assessed_arg_from_pred_ev': 0,
                               'num_ann_arguments': num_ann_arguments,
+                              'precision_args_from_ins_matchwextrarel': 0,
+                              'recall_args_from_ins_matchwextrarel': 0,
+                              'f1_args_from_ins_matchwextrarel': 0,
                               'num_ann_arg_match': 0,
                               'num_ann_arg_match_inexact': 0,
                               'num_ann_arg_match_extrarel': 0,
-                              'num_arguments_assessed': 0,
                               'num_arg_with_matched_ep': 0,
                               'num_arguments_match_exact': 0,
                               'num_arguments_matchwinexact': 0,
@@ -1096,18 +1515,20 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
                                       'num_pred_events_assessed': 0,
                                       'num_pred_events_assessed_plausible': 0,
                                       'num_pred_events_assessed_implausible': 0,
+                                      'num_pred_events_appr_hierarchy': 0,
                                       'percentage_pred_events_assessed': 0,
                                       'precision_pred_events_assessed': 0,
                                       'recall_pred_events_assessed': 0,
                                       'F1_pred_events_assessed': 0,
-                                      'num_pred_events_justfi_yes': 0,
-                                      'num_pred_events_justfi_no': 0,
+                                      #   'num_pred_events_justfi_yes': 0,
+                                      #   'num_pred_events_justfi_no': 0,
                                       'num_arguments': num_arguments,
                                       'num_arguments_predicted': num_arguments_predicted,
                                       'num_pred_arguments_assessed': 0,
                                       'num_pred_arguments_assessed_plausible': 0,
                                       'num_pred_arguments_assessed_implausible': 0,
                                       'percentage_pred_arguments_assessed': 0,
+                                      'percentage_pred_events_hierarchy': 0,
                                       'precision_pred_arguments_assessed': 0,
                                       'recall_pred_arguments_assessed': 0,
                                       'F1_pred_arguments_assessed': 0,
@@ -1148,12 +1569,19 @@ def assess_task1_submissions(output_dir, task1_annotation_collection,
     ta2_ev_df.to_csv(os.path.join(output_dir, "TA2_Assessed_Event_stats.csv"), index=False)
     a_ta2_ev_df = ta2_ev_df.loc[ta2_ev_df['num_events_assessed'] > 0, ].copy()
     a_ta2_ev_df.sort_values(by=["ta1_team", "ta2_team", "ce", "schema_instance_id"], inplace=True)
-    a_ta2_ev_df.to_csv(os.path.join(output_dir, "TA2_Assessed_Event_stats_assessed_only.csv"),
+    a_ta2_ev_df.to_csv(os.path.join(output_dir,
+                                    "TA2_Assessed_Event_stats_assessed_only.csv"),
                        index=False)
     ta2_ke_df.to_csv(os.path.join(output_dir, "TA2_Assessed_Arguments_stats.csv"), index=False)
     a_ta2_ke_df = ta2_ke_df.loc[ta2_ke_df['num_arguments_assessed'] > 0, ].copy()
     a_ta2_ke_df.sort_values(by=["ta1_team", "ta2_team", "ce", "schema_instance_id"], inplace=True)
-    a_ta2_ke_df.to_csv(os.path.join(output_dir, "TA2_Assessed_Arguments_stats_assessed_only.csv"),
+    a_ta2_ke_df.to_csv(os.path.join(output_dir,
+                                    "TA2_Assessed_Arguments_stats_assessed_only.csv"),
                        index=False)
     ta2_pred_df.to_csv(os.path.join(output_dir, "TA2_Assessed_Prediction_stats.csv"), index=False)
+    a_ta2_pred_df = ta2_pred_df.loc[ta2_pred_df['num_pred_events_assessed'] > 0, ].copy()
+    a_ta2_pred_df.sort_values(by=["ta1_team", "ta2_team", "ce", "schema_instance_id"], inplace=True)
+    a_ta2_pred_df.to_csv(os.path.join(output_dir,
+                                      "TA2_Assessed_Prediction_stats_assessed_only.csv"),
+                         index=False)
     return

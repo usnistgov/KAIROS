@@ -725,6 +725,7 @@ def match_ke_elements(output_dir, annotation_collection, ta2_collection, graph_g
                 if len(graph_g_ce_list) > 1:
                     print("Warning: Multiple Graph G instances of the same complex event")
                     print("Using First of these")
+                print("graph g ce list for {}: ".format(ce), graph_g_ce_list)
                 graph_g_ce = graph_g_ce_list[0]
                 base_filename = ta2_ceinstance.ce_instance_file_name_base
                 if not os.path.isdir(output_dir):

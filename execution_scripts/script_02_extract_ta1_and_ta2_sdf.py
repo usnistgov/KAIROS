@@ -47,7 +47,8 @@ def extract_sdf(config_filepath: str, config_mode: str, score_tasks: str):
                                           config[config_mode]["graph_g_extraction_subdir"])
     # TA1
     ta1_collection = TA1Collection()
-    if score_tasks == "ta1" or score_tasks == "all":
+    # only run in 'ta1' since we don't need to compute TA1 stats in Phase2b
+    if score_tasks == "ta1":
         print("Extracting TA1 Libraries from SDF")
         try:
             cmu_ta1_library = TA1Library("CMU")

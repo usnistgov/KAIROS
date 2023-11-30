@@ -25,40 +25,43 @@ class Assessment:
         """
         # We have six files; read them and then merge them with the mapping frame
         mapping_df = pd.read_table(os.path.join(assessment_dir, "resin_file_mapping.tab"), sep="\t")
+        # add .json for phase2bEval
+        mapping_df['json_id'] = mapping_df['json_id'] + '.json'
+        mapping_df['file_name'] = mapping_df['file_name'] + '.json'
 
         # We have six files; read them and then merge them with the mapping frame
-        self.ce_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2a_ce_matching.tab"),
+        self.ce_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2b_ce_matching.tab"),
                                    sep="\t")
         self.ce_df = self.ce_df.merge(mapping_df, how="left")
         if len(self.ce_df.loc[pd.isna(self.ce_df['file_name']), 'file_name']) > 0:
             self.ce_df.loc[pd.isna(self.ce_df['file_name']), 'file_name'] = \
                 self.ce_df.loc[pd.isna(self.ce_df['file_name']), 'json_id']
-        self.ep_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2a_ep_alignment.tab"),
+        self.ep_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2b_ep_alignment.tab"),
                                    sep="\t")
         self.ep_df = self.ep_df.merge(mapping_df, how="left")
         if len(self.ep_df.loc[pd.isna(self.ep_df['file_name']), 'file_name']) > 0:
             self.ep_df.loc[pd.isna(self.ep_df['file_name']), 'file_name'] = \
                 self.ep_df.loc[pd.isna(self.ep_df['file_name']), 'json_id']
-        self.ke_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2a_ke_analysis.tab"),
+        self.ke_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2b_ke_analysis.tab"),
                                    sep="\t")
         self.ke_df = self.ke_df.merge(mapping_df, how="left")
         if len(self.ke_df.loc[pd.isna(self.ke_df['file_name']), 'file_name']) > 0:
             self.ke_df.loc[pd.isna(self.ke_df['file_name']), 'file_name'] = \
                 self.ke_df.loc[pd.isna(self.ke_df['file_name']), 'json_id']
-        self.corr_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2a_correctness.tab"),
+        self.corr_df = pd.read_table(os.path.join(assessment_dir, "KAIROS_phase2b_correctness.tab"),
                                      sep="\t")
         self.corr_df = self.corr_df.merge(mapping_df, how="left")
         if len(self.corr_df.loc[pd.isna(self.corr_df['file_name']), 'file_name']) > 0:
             self.corr_df.loc[pd.isna(self.corr_df['file_name']), 'file_name'] = \
                 self.corr_df.loc[pd.isna(self.corr_df['file_name']), 'json_id']
         self.pred_plaus_df = pd.read_table(
-            os.path.join(assessment_dir, "KAIROS_phase2a_prediction_plausibility.tab"), sep="\t")
+            os.path.join(assessment_dir, "KAIROS_phase2b_prediction_plausibility.tab"), sep="\t")
         self.pred_plaus_df = self.pred_plaus_df.merge(mapping_df, how="left")
         if len(self.pred_plaus_df.loc[pd.isna(self.pred_plaus_df['file_name']), 'file_name']) > 0:
             self.pred_plaus_df.loc[pd.isna(self.pred_plaus_df['file_name']), 'file_name'] = \
                 self.pred_plaus_df.loc[pd.isna(self.pred_plaus_df['file_name']), 'json_id']
         self.pred_arg_df = pd.read_table(
-            os.path.join(assessment_dir, "KAIROS_phase2a_prediction_arg_analysis.tab"), sep="\t")
+            os.path.join(assessment_dir, "KAIROS_phase2b_prediction_arg_analysis.tab"), sep="\t")
         self.pred_arg_df = self.pred_arg_df.merge(mapping_df, how="left")
         if len(self.pred_arg_df.loc[pd.isna(self.pred_arg_df['file_name']), 'file_name']) > 0:
             self.pred_arg_df.loc[pd.isna(self.pred_arg_df['file_name']), 'file_name'] = \
@@ -74,17 +77,25 @@ class Assessment:
         self.pred_plaus_df['und_str'] = "_"
         self.pred_arg_df['und_str'] = "_"
 
-        self.ce_df['schema_instance_id'] = self.ce_df['file_name'] + \
+        self.ce_df['schema_instance_id'] = self.ce_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.ce_df['und_str'] + self.ce_df['instance_id'].str.split('/').str[1]
-        self.ep_df['schema_instance_id'] = self.ep_df['file_name'] + \
+        self.ep_df['schema_instance_id'] = self.ep_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.ep_df['und_str'] + self.ep_df['instance_id'].str.split('/').str[1]
-        self.ke_df['schema_instance_id'] = self.ke_df['file_name'] + \
+        self.ke_df['schema_instance_id'] = self.ke_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.ke_df['und_str'] + self.ke_df['instance_id'].str.split('/').str[1]
-        self.corr_df['schema_instance_id'] = self.corr_df['file_name'] + \
+        self.corr_df['schema_instance_id'] = self.corr_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.corr_df['und_str'] + self.corr_df['instance_id'].str.split('/').str[1]
-        self.pred_plaus_df['schema_instance_id'] = self.pred_plaus_df['file_name'] + \
+        self.pred_plaus_df['schema_instance_id'] = \
+            self.pred_plaus_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.pred_plaus_df['und_str'] + self.pred_plaus_df['instance_id'].str.split('/').str[1]
-        self.pred_arg_df['schema_instance_id'] = self.pred_arg_df['file_name'] + \
+        self.pred_arg_df['schema_instance_id'] = \
+            self.pred_arg_df['file_name'].str.split('.').str[0] + \
+            "_abridged.json" + \
             self.pred_arg_df['und_str'] + self.pred_arg_df['instance_id'].str.split('/').str[1]
 
         self.ce_df.drop(columns=["und_str"], inplace=True)

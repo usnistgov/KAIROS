@@ -8,8 +8,10 @@ import argparse
 
 from kevs.TA2Instantiation import TA2Collection
 from kevs.Annotation import Annotation
-from kevs.analyze_assessments import assess_task1_submissions, produce_summary_matrix
+from kevs.analyze_assessments import assess_task1_submissions, \
+    produce_aggregated_scores
 from kevs.Assessment import Assessment
+from kevs.generate_plots import generate_task1_plots
 
 
 def score_task1_assessment(config_filepath: str, config_mode: str, score_tasks: str) -> None:
@@ -53,20 +55,15 @@ def score_task1_assessment(config_filepath: str, config_mode: str, score_tasks: 
             or not os.path.isdir(ta2_task2_score_dir):
         sys.exit('Directory not found: ' + ta2_task1_score_dir +
                  ' or ' + ta2_task2_score_dir)
-    # if TA2 Task1 analysis directories do not exist, create them
-    # For later: ta1_as_path = os.path.join(ta1_analysis_dir, "Automated_Scoring")
-    ta2_t1_assessment_path = os.path.join(ta2_task1_analysis_dir, "Assessment_Scores")
 
-    # if TA2 Task2 analysis directories do not exist, create them
-    # if not os.path.isdir(ta2_t2_as_path):
-    #    os.makedirs(ta2_t2_as_path)
+    ta2_t1_assessment_path = os.path.join(ta2_task1_analysis_dir, "Assessment_Scores")
+    if not os.path.isdir(ta2_t1_assessment_path):
+        os.mkdir(ta2_t1_assessment_path)
 
     # Annotation must be importated for all tasks
     print("Importing Annotations")
     task1_annotation_collection = Annotation(is_task2=False)
     task1_annotation_collection.import_all_annotation(task1_annotation_dir)
-    task2_annotation_collection = Annotation(is_task2=True)
-    task2_annotation_collection.import_all_annotation(task2_annotation_dir)
 
     print("Importing TA2 Task 1 Submissions")
     ta2_task1_collection = TA2Collection(is_task2=False)
@@ -82,7 +79,9 @@ def score_task1_assessment(config_filepath: str, config_mode: str, score_tasks: 
         if ta2_task1_collection.ta2dict:
             assess_task1_submissions(ta2_t1_assessment_path, task1_annotation_collection,
                                      ta2_task1_collection, assessment_collection)
-            produce_summary_matrix(ta2_t1_assessment_path)
+            produce_aggregated_scores(ta2_t1_assessment_path)
+            # produce_summary_matrix(ta2_t1_assessment_path)  # not used in phase2b
+            generate_task1_plots(ta2_t1_assessment_path)
         else:
             print("No TA2 Task 1 Submissions to Assess")
 

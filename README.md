@@ -12,11 +12,7 @@ KAIROS TA1 and TA2 Systems.
 
 ## New in this version
 
-The software has been updated for SDF 2.3 (beta).
-
-This is the preliminary scorer and graph G converter for Phase 2b. 
-
-The software will be updated after we receive the finalized assessment format.
+The software has been updated for Phase2b full evaluation.
 
 The evaluation of scores for TA1 are not supported in this version.
 
@@ -33,6 +29,7 @@ You can access the previous version of softwares in the tags tab.
 Currently available:
 * phase_2a: Software for Phase 2a full evaluation
 * phase_2b_beta: Software for Phase 2b DryRun
+* phase_2b: Software for Phase 2b full evaluation
 
 ## Installing and Uninstalling the software
 
